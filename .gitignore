@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Nix
+result
+result-*
+.direnv/
+# result es el link que crea nix build
+
+# Frontend / Node
+node_modules/
+dist/
+build/
+.eslintcache
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
