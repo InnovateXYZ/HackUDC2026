@@ -147,7 +147,10 @@ function MainScreen() {
                     restrictions={selectedQuestion.restrictions}
                     like={selectedQuestion.like}
                     temporary={selectedQuestion.temporary}
-                    onLikeChange={(newLike) => setSelectedQuestion(prev => ({ ...prev, like: newLike }))}
+                    onLikeChange={(newLike) => {
+                        setSelectedQuestion(prev => ({ ...prev, like: newLike }));
+                        setHistory(prev => prev.map(q => q.id === selectedQuestion.id ? { ...q, like: newLike } : q));
+                    }}
                     onNewQuery={handleNewChat}
                 />
             );
