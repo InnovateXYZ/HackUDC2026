@@ -28,6 +28,7 @@ class MetadataResponse(BaseModel):
 class DecisionRequest(BaseModel):
     question: str
     metadata: str | None = None
+    llm_model: str = "gemma-3-27b-it"  # Default LLM model
 
 
 class DecisionResponse(BaseModel):

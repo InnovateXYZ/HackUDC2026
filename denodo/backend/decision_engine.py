@@ -30,8 +30,15 @@ class GenericDecisionEngine:
     # Extra parameters only for answerDataQuestion
     DATA_QUESTION_EXTRA_PARAMS = {
         "vql_execute_rows_limit": 100,
-        "llm_response_rows_limit": 30,
+        "llm_response_rows_limit": 100,
     }
+
+    # Available LLM models
+    AVAILABLE_MODELS = [
+        "gemma-3-27b-it",
+        "gemini-2.5-flash",
+        "gemini-3-flash-preview",
+    ]
 
     def __init__(
         self,
@@ -111,7 +118,7 @@ class GenericDecisionEngine:
         execution_prompt = (
             f"You are a senior data analyst generating a professional analytical report.\n\n"
             f'USER QUESTION:\n"{user_question}"\n\n'
-            f"AVAILABLE SCHEMA (use ONLY these tables and columns — do NOT invent new ones):\n"
+            f"AVAILABLE SCHEMA:\n"
             f"{discovered_schema}\n\n"
             f"INSTRUCTIONS — produce a detailed, well-structured Markdown report with the "
             f"following sections. Omit a section ONLY if it is genuinely irrelevant to the "
@@ -186,9 +193,25 @@ class GenericDecisionEngine:
         self,
         user_question: str,
         discovered_schema: str | None = None,
+        llm_model: str | None = None,
     ) -> Dict[str, Any]:
         """If discovered_schema is provided, skip the metadata phase and go
-        straight to execution. Otherwise run both phases as before."""
+        straight to execution. Otherwise run both phases as before.
+        If llm_model is provided, use it instead of the default."""
+
+        # Use provided llm_model or fallback to default
+        if llm_model is None:
+            llm_model = self.DEFAULT_PARAMS["llm_model"]
+        elif llm_model not in self.AVAILABLE_MODELS:
+            return {
+                "status": "error",
+                "message": f"Invalid LLM model. Available models: {', '.join(self.AVAILABLE_MODELS)}",
+            }
+
+        # Create modified params with the selected llm_model
+        modified_params = {**self.DEFAULT_PARAMS, "llm_model": llm_model}
+        original_params = self.DEFAULT_PARAMS.copy()
+        self.__class__.DEFAULT_PARAMS = modified_params
 
         try:
             if discovered_schema is None:
@@ -216,3 +239,6 @@ class GenericDecisionEngine:
                 "status": "error",
                 "message": str(e),
             }
+        finally:
+            # Restore original params
+            self.__class__.DEFAULT_PARAMS = original_params

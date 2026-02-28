@@ -75,7 +75,7 @@ function MainScreen() {
     };
 
     // Handle stepper submission — call decision engine (Phase 2)
-    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper }) => {
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel }) => {
         setLoading(true);
         setError(null);
         try {
@@ -91,6 +91,7 @@ function MainScreen() {
                 body: JSON.stringify({
                     question: prompt,
                     metadata: metadataFromStepper || null,
+                    llm_model: llmModel,
                 }),
             });
 

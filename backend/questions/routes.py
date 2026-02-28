@@ -88,7 +88,11 @@ def decide(
     database with the answer, and return the result. If metadata is provided
     (from a prior /get_metadata call), skips the metadata discovery phase."""
     try:
-        result = engine.answer(request.question, discovered_schema=request.metadata)
+        result = engine.answer(
+            request.question,
+            discovered_schema=request.metadata,
+            llm_model=request.llm_model,
+        )
 
         if result.get("status") == "error":
             return DecisionResponse(
