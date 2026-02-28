@@ -136,7 +136,7 @@ class GenericDecisionEngine:
                     params=self.METADATA_PARAMS,
                     headers=self.headers,
                     auth=self.auth,
-                    timeout=300,          # metadata load can be slow
+                    timeout=300,  # metadata load can be slow
                 )
                 logger.info(
                     "[Decision Engine] Response status: %s, content-type: %s, "
@@ -159,8 +159,7 @@ class GenericDecisionEngine:
                 body = response.text.strip()
                 if not body:
                     logger.warning(
-                        "[Decision Engine] Empty response body. "
-                        "Retrying in 5 s …"
+                        "[Decision Engine] Empty response body. " "Retrying in 5 s …"
                     )
                     time.sleep(5)
                     continue
@@ -169,7 +168,11 @@ class GenericDecisionEngine:
                 logger.info(
                     "[Decision Engine] Metadata loaded successfully! "
                     "Response keys: %s",
-                    list(data.keys()) if isinstance(data, dict) else type(data).__name__,
+                    (
+                        list(data.keys())
+                        if isinstance(data, dict)
+                        else type(data).__name__
+                    ),
                 )
                 return
             except requests.exceptions.ConnectionError:
@@ -177,13 +180,9 @@ class GenericDecisionEngine:
                     "[Decision Engine] AI SDK not reachable. Retrying in 5 s …"
                 )
             except requests.exceptions.Timeout:
-                logger.warning(
-                    "[Decision Engine] Request timed out. Retrying in 5 s …"
-                )
+                logger.warning("[Decision Engine] Request timed out. Retrying in 5 s …")
             except requests.exceptions.HTTPError as exc:
-                logger.error(
-                    "[Decision Engine] HTTP error: %s. Retrying in 5 s …", exc
-                )
+                logger.error("[Decision Engine] HTTP error: %s. Retrying in 5 s …", exc)
             except Exception as exc:
                 logger.error(
                     "[Decision Engine] Unexpected error: %s. Retrying in 5 s …", exc
@@ -276,15 +275,6 @@ class GenericDecisionEngine:
         "## ✅ Recommendations\n"
         "Based on the data, suggest actionable next steps, areas for deeper "
         "analysis, or decisions the user could take.\n\n"
-        "## 🎯 Decision\n"
-        "If the data supports a clear, actionable decision (e.g. choosing "
-        "between options, investing/not investing, prioritising one item over "
-        "another, accepting/rejecting a hypothesis), state it explicitly here "
-        "as a direct recommendation worded as a decision statement. "
-        "Justify it briefly with the most relevant data points. "
-        "If the question is purely informational and no decision applies, "
-        "write: *No specific decision is required — this report is "
-        "informational.*\n\n"
         "## ⚠️ Caveats & Limitations\n"
         "Note any data quality issues, missing values, scope limitations, "
         "or assumptions made during the analysis.\n\n"
