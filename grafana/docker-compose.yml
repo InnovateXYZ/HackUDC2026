@@ -1,0 +1,17 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    user: "1000"
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Change in production
+      - GF_SECURITY_ADMIN_USER=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+    volumes:
+      - ./data:/var/lib/grafana
+      - ../backend/project.db:/var/lib/data/project.db:ro
+
