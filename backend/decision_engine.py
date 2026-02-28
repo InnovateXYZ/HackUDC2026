@@ -252,12 +252,7 @@ class GenericDecisionEngine:
         '"## 📋 Executive Summary", and so on for every section. Do NOT leave '
         "any heading or text in English unless the user question is in English.\n\n"
         'USER QUESTION:\n"{user_question}"\n\n'
-        "USER PROFILE (use this to personalise the report — tone, focus, "
-        "and recommendations):\n"
-        "- Name: {user_name}\n"
-        "- Date of birth: {user_date_of_birth}\n"
-        "- Gender identity: {user_gender}\n"
-        "- Preferences / interests: {user_preferences}\n\n"
+        "{user_profile_block}"
         "RAW DATA / ANSWER FROM THE DATABASE:\n"
         "```\n{raw_data}\n```\n\n"
         "VQL QUERY USED (for methodology reference):\n"
@@ -265,10 +260,7 @@ class GenericDecisionEngine:
         "INSTRUCTIONS — You MUST produce ALL of the following sections "
         "(translate every section title to the language of the user question). "
         "Do NOT skip any section. If a section has limited relevance, still "
-        "include it with a brief note. Personalise the report for the user: "
-        "address them by name when available, tailor insights and "
-        "recommendations to their stated preferences, date of birth, and "
-        "interests.\n\n"
+        "include it with a brief note.{personalisation_instruction}\n\n"
         "REQUIRED SECTIONS (shown here in English — you MUST translate the "
         "titles to match the user question language):\n\n"
         "## 📋 Executive Summary\n"
@@ -311,6 +303,23 @@ class GenericDecisionEngine:
         "unless the user question is in English.\n"
     )
 
+    # Block inserted when user profile IS available
+    _USER_PROFILE_BLOCK = (
+        "USER PROFILE (use this to personalise the report — tone, focus, "
+        "and recommendations):\n"
+        "- Name: {user_name}\n"
+        "- Date of birth: {user_date_of_birth}\n"
+        "- Gender identity: {user_gender}\n"
+        "- Preferences / interests: {user_preferences}\n\n"
+    )
+
+    _PERSONALISATION_INSTRUCTION = (
+        " Personalise the report for the user: "
+        "address them by name when available, tailor insights and "
+        "recommendations to their stated preferences, date of birth, and "
+        "interests."
+    )
+
     def _generate_report(
         self,
         user_question: str,
@@ -328,15 +337,25 @@ class GenericDecisionEngine:
         raw_answer = raw_data_response.get("answer", str(raw_data_response))
         vql = raw_data_response.get("vql", "N/A")
 
-        profile = user_profile or {}
+        # Build the user profile block only when a profile is provided
+        if user_profile:
+            user_profile_block = self._USER_PROFILE_BLOCK.format(
+                user_name=user_profile.get("name") or "N/A",
+                user_date_of_birth=user_profile.get("date_of_birth") or "N/A",
+                user_gender=user_profile.get("gender_identity") or "N/A",
+                user_preferences=user_profile.get("user_preferences") or "N/A",
+            )
+            personalisation_instruction = self._PERSONALISATION_INSTRUCTION
+        else:
+            user_profile_block = ""
+            personalisation_instruction = ""
+
         report_prompt = self.REPORT_TEMPLATE.format(
             user_question=user_question,
             raw_data=raw_answer,
             vql=vql,
-            user_name=profile.get("name") or "N/A",
-            user_date_of_birth=profile.get("date_of_birth") or "N/A",
-            user_gender=profile.get("gender_identity") or "N/A",
-            user_preferences=profile.get("user_preferences") or "N/A",
+            user_profile_block=user_profile_block,
+            personalisation_instruction=personalisation_instruction,
         )
 
         params = {**self.DEFAULT_PARAMS, "question": report_prompt}

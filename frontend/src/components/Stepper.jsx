@@ -4,9 +4,9 @@ import AVAILABLE_DATASETS from 'virtual:available-datasets';
 const STEP_LABELS = ['Question & Datasets', 'Data & Filters'];
 
 const LLM_MODELS = [
-    { value: 'gemma-3-27b-it', label: 'Gemma 3.0 27B (Default)' },
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-    { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview' },
+    { value: 'gemma-3-27b-it', label: 'Gemma-3-27b-it (Default)' },
+    { value: 'gemini-2.5-flash', label: 'Gemini-2.5-flash' },
+    { value: 'gemini-3-flash-preview', label: 'Gemini-3-flash-preview' },
 ];
 
 function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata, executionResult }) {
@@ -491,11 +491,10 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             type="button"
                             onClick={() => setTemporary(t => !t)}
                             title={temporary ? 'Temporary query — will NOT be saved' : 'Query will be saved to history'}
-                            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition-colors border ${
-                                temporary
+                            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition-colors border ${temporary
                                     ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10'
                                     : 'border-[#333] text-gray-400 hover:text-white hover:bg-[#1e1e1e]'
-                            }`}
+                                }`}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
@@ -508,47 +507,47 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             {temporary ? 'Temporary' : 'Saved'}
                         </button>
 
-                    {currentStep < 1 ? (
-                        <button
-                            onClick={handleNext}
-                            disabled={!canNext() || metadataLoading}
-                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${canNext() && !metadataLoading
-                                ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
-                                : 'bg-[#333] text-gray-500 cursor-not-allowed'
-                                }`}
-                        >
-                            Next
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loading || metadataLoading}
-                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${!(loading || metadataLoading)
-                                ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
-                                : 'bg-[#333] text-gray-500 cursor-not-allowed'
-                                }`}
-                        >
-                            {loading ? (
-                                <>
-                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                                    </svg>
-                                    Analyzing…
-                                </>
-                            ) : (
-                                <>
-                                    Submit
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
-                                    </svg>
-                                </>
-                            )}
-                        </button>
-                    )}
+                        {currentStep < 1 ? (
+                            <button
+                                onClick={handleNext}
+                                disabled={!canNext() || metadataLoading}
+                                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${canNext() && !metadataLoading
+                                    ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
+                                    : 'bg-[#333] text-gray-500 cursor-not-allowed'
+                                    }`}
+                            >
+                                Next
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={loading || metadataLoading}
+                                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${!(loading || metadataLoading)
+                                    ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
+                                    : 'bg-[#333] text-gray-500 cursor-not-allowed'
+                                    }`}
+                            >
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                        </svg>
+                                        Analyzing…
+                                    </>
+                                ) : (
+                                    <>
+                                        Submit
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
+                                        </svg>
+                                    </>
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

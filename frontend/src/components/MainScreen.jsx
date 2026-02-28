@@ -14,6 +14,7 @@ function MainScreen() {
     const [metadata, setMetadata] = useState(null);
     const [executionResult, setExecutionResult] = useState(null);
     const [error, setError] = useState(null);
+    const [anonymousMode, setAnonymousMode] = useState(false);
 
     // Get user from localStorage
     const getUser = () => {
@@ -94,6 +95,7 @@ function MainScreen() {
                     metadata: metadataFromStepper || null,
                     llm_model: llmModel,
                     datasets: selectedDatasets || [],
+                    exclude_user_info: anonymousMode,
                     save_to_history: saveToHistory,
                 }),
             });
@@ -215,7 +217,28 @@ function MainScreen() {
                     <h1 className="text-lg font-semibold">
                         <span className="text-[#f47721]">Denodo</span> Data Explorer
                     </h1>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-3 text-sm text-gray-400">
+                        {/* Anonymous mode toggle */}
+                        <button
+                            onClick={() => setAnonymousMode((prev) => !prev)}
+                            title={anonymousMode ? 'Personal info excluded from reports' : 'Personal info included in reports'}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${anonymousMode
+                                ? 'bg-[#f47721]/20 border-[#f47721] text-[#f47721]'
+                                : 'border-[#444] text-gray-400 hover:text-white hover:border-[#666]'
+                                }`}
+                        >
+                            {anonymousMode ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            )}
+                            {anonymousMode ? 'Anonymous' : 'Personal'}
+                        </button>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7c-4.418 0-8 1.79-8 4v1h16v-1c0-2.21-3.582-4-8-4z" />
                         </svg>
