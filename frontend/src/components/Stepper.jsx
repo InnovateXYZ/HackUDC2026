@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-const STEP_LABELS = ['Question', 'Data Preview', 'Filters'];
+const STEP_LABELS = ['Question', 'Data & Filters'];
 
 const LLM_MODELS = [
     { value: 'gemma-3-27b-it', label: 'Gemma 3.0 27B (Default)' },
@@ -8,7 +8,7 @@ const LLM_MODELS = [
     { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview' },
 ];
 
-function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata }) {
+function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata, executionResult }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
@@ -47,18 +47,14 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
 
     const canNext = () => {
         if (currentStep === 0) return question.trim() !== '';
-        if (currentStep === 1) return !!metadata; // metadata must be loaded
-        if (currentStep === 2) return true;
         return false;
     };
 
     const handleNext = () => {
         if (currentStep === 0 && canNext()) {
-            // Trigger metadata fetch when moving from Question to Data Preview
+            // Trigger metadata fetch when moving from Question to Data & Filters
             onFetchMetadata(question);
             setCurrentStep(1);
-        } else if (currentStep === 1 && canNext()) {
-            setCurrentStep(2);
         }
     };
 
@@ -76,7 +72,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto">
             {/* Step indicators */}
             <div className="flex items-center mb-8">
                 {STEP_LABELS.map((label, idx) => (
@@ -120,7 +116,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
             </div>
 
             {/* Step content */}
-            <div className="bg-[#1e1e1e] rounded-xl p-6 border border-[#333] min-h-[400px] flex flex-col">
+            <div className="bg-[#1e1e1e] rounded-xl p-6 border border-[#333] min-h-[500px] flex flex-col">
                 {/* Step 0: Analytical Question */}
                 {currentStep === 0 && (
                     <div className="flex-1 flex flex-col gap-4">
@@ -154,88 +150,175 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                     </div>
                 )}
 
-                {/* Step 1: Data Preview — show metadata tables/columns */}
+                {/* Step 1: Data & Filters — views + restrictions merged */}
                 {currentStep === 1 && (
-                    <div className="flex-1 flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold text-white">Data Preview</h3>
-                        <p className="text-sm text-gray-400">
-                            These are the tables and columns that the AI has identified as relevant to your question.
-                            Review them before proceeding.
-                        </p>
+                    <div className="flex-1 flex flex-col gap-5 overflow-hidden">
+                        {/* Top: Views & Columns */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-white">Relevant Data Views</h3>
+                            <p className="text-sm text-gray-400 mt-1">
+                                These are the views available. Review them and optionally add filters below.
+                            </p>
+                        </div>
 
                         {metadataLoading ? (
                             <div className="flex-1 flex flex-col items-center justify-center gap-4">
                                 <div className="w-12 h-12 rounded-full border-4 border-[#333] border-t-[#f47721] animate-spin" />
                                 <p className="text-sm text-gray-400">Discovering relevant data schema...</p>
                             </div>
+                        ) : executionResult?.views?.length > 0 ? (
+                            <>
+                                {/* View cards */}
+                                <div className="overflow-y-auto max-h-[260px] pr-1 space-y-3 scrollbar-thin scrollbar-thumb-[#444] scrollbar-track-transparent">
+                                    {executionResult.views.map((view) => {
+                                        const viewData = view.view_json || {};
+                                        const viewName = (view.view_name || viewData.tableName || 'Unknown View').split('.').pop();
+                                        const description = viewData.description || '';
+                                        const columns = viewData.columns || [];
+
+                                        // Parse columns from view_text if view_json doesn't have them
+                                        let parsedColumns = columns;
+                                        if (parsedColumns.length === 0 && view.view_text) {
+                                            const colMatches = view.view_text.matchAll(/^- (\w+) \((\w+)\) -> (.+)$/gm);
+                                            parsedColumns = [...colMatches].map(m => ({
+                                                name: m[1],
+                                                type: m[2],
+                                                description: m[3].replace(/\.\.$/, ''),
+                                            }));
+                                        }
+
+                                        return (
+                                            <div
+                                                key={view.view_name}
+                                                className="rounded-lg border border-[#3a3a3a] bg-[#2a2a2a] overflow-hidden"
+                                            >
+                                                {/* View header */}
+                                                <div className="px-4 py-3 bg-gradient-to-r from-[#f47721]/10 to-transparent border-b border-[#3a3a3a]">
+                                                    <div className="flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#f47721] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                                        </svg>
+                                                        <h4 className="text-sm font-semibold text-white capitalize">
+                                                            {viewName.trim()}
+                                                        </h4>
+                                                    </div>
+                                                    {description && (
+                                                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{description}</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Columns as tags */}
+                                                <div className="px-4 py-3 flex flex-wrap gap-1.5">
+                                                    {parsedColumns.map((col) => {
+                                                        const colName = col.name || col;
+                                                        const colType = col.type || '';
+                                                        const colDesc = col.description || '';
+                                                        return (
+                                                            <span
+                                                                key={colName}
+                                                                title={colDesc ? `${colName} (${colType}): ${colDesc}` : `${colName} (${colType})`}
+                                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono bg-[#333] text-gray-300 border border-[#444] hover:border-[#f47721]/50 hover:text-white transition-colors cursor-default"
+                                                            >
+                                                                <span className="text-[#f47721]/70 text-[10px] uppercase">{colType}</span>
+                                                                {colName}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="border-t border-[#333]" />
+
+                                {/* Bottom: Restrictions & LLM model */}
+                                <div className="flex flex-col gap-3">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-white">Additional Restrictions</h4>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            Add constraints in natural language to refine your analysis (optional).
+                                        </p>
+                                    </div>
+                                    <textarea
+                                        value={restrictions}
+                                        onChange={(e) => setRestrictions(e.target.value)}
+                                        placeholder="e.g. Only include results between 1970 and 1990, exclude team sports, focus on European countries..."
+                                        rows={3}
+                                        className="w-full px-4 py-2 rounded-lg border border-[#444] bg-[#333] text-white text-sm outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
+                                    />
+
+                                    {/* LLM Model Selection */}
+                                    <div className="flex items-center gap-3">
+                                        <label htmlFor="llm-select" className="text-sm font-semibold text-white whitespace-nowrap">
+                                            AI Model
+                                        </label>
+                                        <select
+                                            id="llm-select"
+                                            value={llmModel}
+                                            onChange={(e) => setLlmModel(e.target.value)}
+                                            className="flex-1 px-3 py-1.5 rounded-lg border border-[#f47721] bg-[#2a2a2a] text-white text-sm outline-none focus:border-[#ff9f56] transition-colors"
+                                        >
+                                            {LLM_MODELS.map((model) => (
+                                                <option key={model.value} value={model.value}>
+                                                    {model.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </>
                         ) : metadata ? (
-                            <div className="flex-1 overflow-y-auto rounded-lg border border-[#444] bg-[#2a2a2a] p-4">
-                                <pre className="text-sm text-gray-200 whitespace-pre-wrap font-mono leading-relaxed">
-                                    {metadata}
-                                </pre>
-                            </div>
+                            /* Fallback: show raw metadata if no structured views */
+                            <>
+                                <div className="flex-1 overflow-y-auto rounded-lg border border-[#444] bg-[#2a2a2a] p-4 max-h-[200px]">
+                                    <pre className="text-sm text-gray-200 whitespace-pre-wrap font-mono leading-relaxed">
+                                        {metadata}
+                                    </pre>
+                                </div>
+
+                                <div className="border-t border-[#333]" />
+
+                                <div className="flex flex-col gap-3">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-white">Additional Restrictions</h4>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            Add constraints in natural language to refine your analysis (optional).
+                                        </p>
+                                    </div>
+                                    <textarea
+                                        value={restrictions}
+                                        onChange={(e) => setRestrictions(e.target.value)}
+                                        placeholder="e.g. Only include results between 1970 and 1990, exclude team sports..."
+                                        rows={3}
+                                        className="w-full px-4 py-2 rounded-lg border border-[#444] bg-[#333] text-white text-sm outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
+                                    />
+
+                                    <div className="flex items-center gap-3">
+                                        <label htmlFor="llm-select-fallback" className="text-sm font-semibold text-white whitespace-nowrap">
+                                            AI Model
+                                        </label>
+                                        <select
+                                            id="llm-select-fallback"
+                                            value={llmModel}
+                                            onChange={(e) => setLlmModel(e.target.value)}
+                                            className="flex-1 px-3 py-1.5 rounded-lg border border-[#f47721] bg-[#2a2a2a] text-white text-sm outline-none focus:border-[#ff9f56] transition-colors"
+                                        >
+                                            {LLM_MODELS.map((model) => (
+                                                <option key={model.value} value={model.value}>
+                                                    {model.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </>
                         ) : (
                             <div className="flex-1 flex items-center justify-center">
                                 <p className="text-sm text-red-400">No metadata available. Go back and try again.</p>
                             </div>
                         )}
-                    </div>
-                )}
-
-                {/* Step 2: Filters */}
-                {currentStep === 2 && (
-                    <div className="flex-1 flex flex-col gap-4">
-                        <div>
-                            <h3 className="text-lg font-semibold text-white">Additional Restrictions</h3>
-                            <p className="text-sm text-gray-400 mt-1">
-                                Add constraints in natural language to refine your analysis (optional).
-                            </p>
-                        </div>
-
-                        <div className="flex-1 flex flex-col">
-                            <textarea
-                                value={restrictions}
-                                onChange={(e) => setRestrictions(e.target.value)}
-                                placeholder="e.g. Only include results between 1970 and 1990, exclude team sports, focus on European countries..."
-                                rows={6}
-                                className="w-full flex-1 px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white text-sm outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
-                            />
-                        </div>
-
-                        {/* LLM Model Selection */}
-                        <div className="mt-6 pt-4 border-t border-[#333]">
-                            <label htmlFor="llm-select" className="block text-sm font-semibold text-white mb-2">
-                                AI Model for Analysis
-                            </label>
-                            <select
-                                id="llm-select"
-                                value={llmModel}
-                                onChange={(e) => setLlmModel(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none"
-                                style={{
-                                    backgroundColor: '#2a2a2a',
-                                    borderColor: '#f47721',
-                                    color: 'white',
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.borderColor = '#ff9f56';
-                                    e.target.style.boxShadow = '0 0 0 3px rgba(244, 119, 33, 0.1)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.borderColor = '#f47721';
-                                    e.target.style.boxShadow = 'none';
-                                }}
-                            >
-                                {LLM_MODELS.map((model) => (
-                                    <option key={model.value} value={model.value}>
-                                        {model.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="text-xs text-gray-400 mt-2">
-                                Selected: <span className="text-[#f47721] font-semibold">{LLM_MODELS.find(m => m.value === llmModel)?.label}</span>
-                            </p>
-                        </div>
                     </div>
                 )}
 
@@ -255,7 +338,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                         Previous
                     </button>
 
-                    {currentStep < 2 ? (
+                    {currentStep < 1 ? (
                         <button
                             onClick={handleNext}
                             disabled={!canNext() || metadataLoading}
