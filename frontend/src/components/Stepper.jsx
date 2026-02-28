@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
-import DATASETS from '../utils/datasets';
+import { useRef, useState } from 'react';
 
-const STEP_LABELS = ['Question', 'Filters'];
+const STEP_LABELS = ['Question', 'Data Preview', 'Filters'];
 
-function Stepper({ onSubmit, loading }) {
+function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
-    const [columnSearch, setColumnSearch] = useState('');
 
     // voice recognition state
     const [listening, setListening] = useState(false);
@@ -40,28 +38,21 @@ function Stepper({ onSubmit, loading }) {
         recognitionRef.current = recognition;
     };
 
-    // For each dataset, track which columns are selected (all by default)
-    const [tableColumns, setTableColumns] = useState({});
-
-    const datasetNames = useMemo(() => Object.keys(DATASETS), []);
-
-    // Initialize all columns as selected for all datasets
-    useEffect(() => {
-        const initialState = {};
-        datasetNames.forEach((name) => {
-            initialState[name] = [...DATASETS[name]];
-        });
-        setTableColumns(initialState);
-    }, [datasetNames]);
-
     const canNext = () => {
         if (currentStep === 0) return question.trim() !== '';
-        if (currentStep === 1) return true;
+        if (currentStep === 1) return !!metadata; // metadata must be loaded
+        if (currentStep === 2) return true;
         return false;
     };
 
     const handleNext = () => {
-        if (currentStep < 1) setCurrentStep((s) => s + 1);
+        if (currentStep === 0 && canNext()) {
+            // Trigger metadata fetch when moving from Question to Data Preview
+            onFetchMetadata(question);
+            setCurrentStep(1);
+        } else if (currentStep === 1 && canNext()) {
+            setCurrentStep(2);
+        }
     };
 
     const handlePrev = () => {
@@ -69,10 +60,10 @@ function Stepper({ onSubmit, loading }) {
     };
 
     const handleSubmit = () => {
-        if (!canNext()) return;
         onSubmit({
             question,
             restrictions,
+            metadata,
         });
     };
 
@@ -154,8 +145,36 @@ function Stepper({ onSubmit, loading }) {
                     </div>
                 )}
 
-                {/* Step 1: Filters */}
+                {/* Step 1: Data Preview — show metadata tables/columns */}
                 {currentStep === 1 && (
+                    <div className="flex-1 flex flex-col gap-4">
+                        <h3 className="text-lg font-semibold text-white">Data Preview</h3>
+                        <p className="text-sm text-gray-400">
+                            These are the tables and columns that the AI has identified as relevant to your question.
+                            Review them before proceeding.
+                        </p>
+
+                        {metadataLoading ? (
+                            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                                <div className="w-12 h-12 rounded-full border-4 border-[#333] border-t-[#f47721] animate-spin" />
+                                <p className="text-sm text-gray-400">Discovering relevant data schema...</p>
+                            </div>
+                        ) : metadata ? (
+                            <div className="flex-1 overflow-y-auto rounded-lg border border-[#444] bg-[#2a2a2a] p-4">
+                                <pre className="text-sm text-gray-200 whitespace-pre-wrap font-mono leading-relaxed">
+                                    {metadata}
+                                </pre>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center">
+                                <p className="text-sm text-red-400">No metadata available. Go back and try again.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Step 2: Filters */}
+                {currentStep === 2 && (
                     <div className="flex-1 flex flex-col gap-4">
                         <div>
                             <h3 className="text-lg font-semibold text-white">Additional Restrictions</h3>
@@ -174,7 +193,9 @@ function Stepper({ onSubmit, loading }) {
                             />
                         </div>
                     </div>
-                )}                {/* Navigation buttons */}
+                )}
+
+                {/* Navigation buttons */}
                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#333]">
                     <button
                         onClick={handlePrev}
@@ -190,11 +211,11 @@ function Stepper({ onSubmit, loading }) {
                         Previous
                     </button>
 
-                    {currentStep < 1 ? (
+                    {currentStep < 2 ? (
                         <button
                             onClick={handleNext}
-                            disabled={!canNext()}
-                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${canNext()
+                            disabled={!canNext() || metadataLoading}
+                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${canNext() && !metadataLoading
                                 ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
                                 : 'bg-[#333] text-gray-500 cursor-not-allowed'
                                 }`}
@@ -207,8 +228,8 @@ function Stepper({ onSubmit, loading }) {
                     ) : (
                         <button
                             onClick={handleSubmit}
-                            disabled={!canNext() || loading}
-                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${canNext() && !loading
+                            disabled={loading}
+                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${!loading
                                 ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
                                 : 'bg-[#333] text-gray-500 cursor-not-allowed'
                                 }`}

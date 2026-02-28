@@ -10,6 +10,8 @@ function MainScreen() {
     const [history, setHistory] = useState([]);
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [metadataLoading, setMetadataLoading] = useState(false);
+    const [metadata, setMetadata] = useState(null);
     const [error, setError] = useState(null);
 
     // Get user from localStorage
@@ -42,8 +44,38 @@ function MainScreen() {
     }, [fetchHistory]);
 
 
-    // Handle stepper submission — call decision engine
-    const handleSubmit = async ({ question, restrictions }) => {
+    // Handle metadata fetch — Phase 1: discover tables/columns
+    const handleFetchMetadata = async (question) => {
+        setMetadataLoading(true);
+        setMetadata(null);
+        setError(null);
+        try {
+            const res = await authFetch(`${API_BASE}/questions/get_metadata`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === 'error') {
+                    setError(data.error || 'Metadata discovery returned an error');
+                } else {
+                    setMetadata(data.metadata);
+                }
+            } else {
+                const err = await res.json().catch(() => ({}));
+                setError(err.detail || 'Failed to fetch metadata');
+            }
+        } catch (err) {
+            setError('Could not connect to the server');
+        } finally {
+            setMetadataLoading(false);
+        }
+    };
+
+    // Handle stepper submission — call decision engine (Phase 2)
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper }) => {
         setLoading(true);
         setError(null);
         try {
@@ -56,7 +88,10 @@ function MainScreen() {
             const res = await authFetch(`${API_BASE}/questions/decide`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: prompt }),
+                body: JSON.stringify({
+                    question: prompt,
+                    metadata: metadataFromStepper || null,
+                }),
             });
 
             if (res.ok) {
@@ -85,6 +120,7 @@ function MainScreen() {
 
     const handleNewChat = () => {
         setSelectedQuestion(null);
+        setMetadata(null);
         setError(null);
     };
 
@@ -136,7 +172,13 @@ function MainScreen() {
                         {error}
                     </div>
                 )}
-                <Stepper onSubmit={handleSubmit} loading={loading} />
+                <Stepper
+                    onSubmit={handleSubmit}
+                    onFetchMetadata={handleFetchMetadata}
+                    loading={loading}
+                    metadataLoading={metadataLoading}
+                    metadata={metadata}
+                />
             </div>
         );
     };

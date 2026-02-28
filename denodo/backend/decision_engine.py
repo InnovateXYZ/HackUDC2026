@@ -22,13 +22,13 @@ class GenericDecisionEngine:
         "vector_search_sample_data_k": 3,
         "vector_search_total_limit": 20,
         "vector_search_column_description_char_limit": 200,
-        "disclaimer": True,
+        "disclaimer": False,
         "verbose": True,
+        "check_ambiguity": False,
     }
 
     # Extra parameters only for answerDataQuestion
     DATA_QUESTION_EXTRA_PARAMS = {
-        "check_ambiguity": True,
         "vql_execute_rows_limit": 100,
         "llm_response_rows_limit": 30,
     }
@@ -156,16 +156,49 @@ class GenericDecisionEngine:
         return self._get_with_retry("answerDataQuestion", params)
 
     # -----------------------------
-    # PUBLIC ENTRY POINT
+    # PUBLIC: METADATA DISCOVERY
     # -----------------------------
-    def answer(self, user_question: str) -> Dict[str, Any]:
-
+    def get_metadata(self, user_question: str) -> Dict[str, Any]:
+        """Phase 1 only — discover relevant tables/columns for the question."""
         try:
             metadata_response = self._discover_relevant_schema(user_question)
             discovered_schema = metadata_response.get("answer", "")
 
             if not discovered_schema:
                 raise RuntimeError("Metadata phase returned empty schema")
+
+            return {
+                "status": "success",
+                "metadata": discovered_schema,
+                "raw_metadata": metadata_response,
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e),
+            }
+
+    # -----------------------------
+    # PUBLIC: FULL ANSWER
+    # -----------------------------
+    def answer(
+        self,
+        user_question: str,
+        discovered_schema: str | None = None,
+    ) -> Dict[str, Any]:
+        """If discovered_schema is provided, skip the metadata phase and go
+        straight to execution. Otherwise run both phases as before."""
+
+        try:
+            if discovered_schema is None:
+                metadata_response = self._discover_relevant_schema(user_question)
+                discovered_schema = metadata_response.get("answer", "")
+
+                if not discovered_schema:
+                    raise RuntimeError("Metadata phase returned empty schema")
+            else:
+                metadata_response = {"answer": discovered_schema}
 
             data_response = self._execute_reasoning(
                 user_question,

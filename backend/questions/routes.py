@@ -6,7 +6,14 @@ from sqlmodel import Session
 from ..db import get_session
 from ..users.auth import get_current_user
 from ..users.models import User
-from .schemas import QuestionCreate, QuestionRead, DecisionRequest, DecisionResponse
+from .schemas import (
+    QuestionCreate,
+    QuestionRead,
+    DecisionRequest,
+    DecisionResponse,
+    MetadataRequest,
+    MetadataResponse,
+)
 from .crud import create_question, get_questions_by_user
 from denodo.backend.decision_engine import GenericDecisionEngine
 
@@ -43,6 +50,34 @@ def list_by_user(
 engine = GenericDecisionEngine()
 
 
+@router.post("/get_metadata", response_model=MetadataResponse)
+def get_metadata(
+    request: MetadataRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Discover relevant tables and columns for the given question (Phase 1).
+    Returns the schema metadata so the frontend can display it before executing."""
+    try:
+        result = engine.get_metadata(request.question)
+
+        if result.get("status") == "error":
+            return MetadataResponse(
+                status="error",
+                error=result.get("message", "Unknown error from decision engine"),
+            )
+
+        return MetadataResponse(
+            status="success",
+            metadata=result.get("metadata", ""),
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error discovering metadata: {str(e)}",
+        )
+
+
 @router.post("/decide", response_model=DecisionResponse)
 def decide(
     request: DecisionRequest,
@@ -50,9 +85,10 @@ def decide(
     current_user: User = Depends(get_current_user),
 ):
     """Process a user question through the decision engine, persist it in the
-    database with the answer, and return the result. Requires authentication."""
+    database with the answer, and return the result. If metadata is provided
+    (from a prior /get_metadata call), skips the metadata discovery phase."""
     try:
-        result = engine.answer(request.question)
+        result = engine.answer(request.question, discovered_schema=request.metadata)
 
         if result.get("status") == "error":
             return DecisionResponse(

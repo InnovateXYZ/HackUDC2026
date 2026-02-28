@@ -15,8 +15,19 @@ class QuestionRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class MetadataRequest(BaseModel):
+    question: str
+
+
+class MetadataResponse(BaseModel):
+    status: str
+    metadata: str | None = None
+    error: str | None = None
+
+
 class DecisionRequest(BaseModel):
     question: str
+    metadata: str | None = None
 
 
 class DecisionResponse(BaseModel):
