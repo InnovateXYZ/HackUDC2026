@@ -1,3 +1,4 @@
+import os
 import requests
 import time
 from typing import Dict, Any
@@ -22,15 +23,15 @@ class GenericDecisionEngine:
         "vector_search_sample_data_k": 3,
         "vector_search_total_limit": 20,
         "vector_search_column_description_char_limit": 200,
-        "disclaimer": False,
+        "disclaimer": True,
         "verbose": True,
-        "check_ambiguity": False,
     }
 
     # Extra parameters only for answerDataQuestion
     DATA_QUESTION_EXTRA_PARAMS = {
+        "check_ambiguity": True,
         "vql_execute_rows_limit": 100,
-        "llm_response_rows_limit": 100,
+        "llm_response_rows_limit": 30,
     }
 
     # Available LLM models
@@ -82,24 +83,39 @@ class GenericDecisionEngine:
 
                 return data
 
-            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
                 attempt += 1
                 if attempt >= self.max_retries:
-                    raise RuntimeError("AI SDK unreachable after multiple retries")
+                    raise RuntimeError("AI SDK unreachable after multiple retries") from exc
                 time.sleep(delay)
                 delay *= self.backoff_factor
 
             except requests.exceptions.HTTPError as e:
-                raise RuntimeError(f"HTTP error from AI SDK: {str(e)}")
+                raise RuntimeError(f"HTTP error from AI SDK: {str(e)}") from e
 
-            except Exception as e:
-                raise RuntimeError(f"Unexpected error during request: {str(e)}")
+            except ValueError as ve:
+                raise RuntimeError(f"Invalid response format: {str(ve)}") from ve
 
         raise RuntimeError("Max retries exceeded")
 
     # -----------------------------
     # PHASE 1 — METADATA DISCOVERY
     # -----------------------------
+    def get_metadata(self, user_question: str) -> Dict[str, Any]:
+        """Discover relevant schema for a question (metadata phase only)."""
+        params = {**self.DEFAULT_PARAMS, "question": user_question}
+        try:
+            result = self._get_with_retry("answerMetadataQuestion", params)
+            return {
+                "status": "success",
+                "metadata": result.get("answer", ""),
+            }
+        except RuntimeError as e:
+            return {
+                "status": "error",
+                "message": str(e),
+            }
+
     def _discover_relevant_schema(self, user_question: str) -> Dict[str, Any]:
 
         params = {**self.DEFAULT_PARAMS, "question": user_question}
@@ -118,7 +134,7 @@ class GenericDecisionEngine:
         execution_prompt = (
             f"You are a senior data analyst generating a professional analytical report.\n\n"
             f'USER QUESTION:\n"{user_question}"\n\n'
-            f"AVAILABLE SCHEMA:\n"
+            f"AVAILABLE SCHEMA (use ONLY these tables and columns — do NOT invent new ones):\n"
             f"{discovered_schema}\n\n"
             f"INSTRUCTIONS — produce a detailed, well-structured Markdown report with the "
             f"following sections. Omit a section ONLY if it is genuinely irrelevant to the "
@@ -162,58 +178,46 @@ class GenericDecisionEngine:
 
         return self._get_with_retry("answerDataQuestion", params)
 
-    # -----------------------------
-    # PUBLIC: METADATA DISCOVERY
-    # -----------------------------
-    def get_metadata(self, user_question: str) -> Dict[str, Any]:
-        """Phase 1 only — discover relevant tables/columns for the question."""
-        try:
-            metadata_response = self._discover_relevant_schema(user_question)
-            discovered_schema = metadata_response.get("answer", "")
-
-            if not discovered_schema:
-                raise RuntimeError("Metadata phase returned empty schema")
-
-            return {
-                "status": "success",
-                "metadata": discovered_schema,
-                "raw_metadata": metadata_response,
-            }
-
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e),
-            }
-
-    # -----------------------------
-    # PUBLIC: FULL ANSWER
-    # -----------------------------
+    # PUBLIC ENTRY POINT
     def answer(
         self,
         user_question: str,
-        discovered_schema: str | None = None,
-        llm_model: str | None = None,
+        discovered_schema: str = None,
+        llm_model: str = None,
     ) -> Dict[str, Any]:
-        """If discovered_schema is provided, skip the metadata phase and go
-        straight to execution. Otherwise run both phases as before.
-        If llm_model is provided, use it instead of the default."""
+        """
+        Answer a question through the decision engine with metrics tracking.
+        
+        Args:
+            user_question: The user's analytical question
+            discovered_schema: Optional pre-discovered schema (skips metadata phase if provided)
+            llm_model: Optional LLM model selection
+            
+        Returns:
+            Dict with status, phases, and metrics (time_out, used_tokens, model_llm)
+        """
+        # determine which model we will report
+        model_used = llm_model or os.getenv("LLM_MODEL") or self.DEFAULT_PARAMS["llm_model"]
 
-        # Use provided llm_model or fallback to default
-        if llm_model is None:
-            llm_model = self.DEFAULT_PARAMS["llm_model"]
-        elif llm_model not in self.AVAILABLE_MODELS:
+        # validate provided model if any
+        if llm_model is not None and llm_model not in self.AVAILABLE_MODELS:
             return {
                 "status": "error",
                 "message": f"Invalid LLM model. Available models: {', '.join(self.AVAILABLE_MODELS)}",
             }
 
-        # Create modified params with the selected llm_model
-        modified_params = {**self.DEFAULT_PARAMS, "llm_model": llm_model}
-        original_params = self.DEFAULT_PARAMS.copy()
-        self.__class__.DEFAULT_PARAMS = modified_params
-
         try:
+            # apply the selected llm_model to the params we will send
+            modified_params = {**self.DEFAULT_PARAMS, "llm_model": model_used}
+
+            # Temporarily replace DEFAULT_PARAMS for this request
+            original_params = self.DEFAULT_PARAMS.copy()
+            self.__class__.DEFAULT_PARAMS = modified_params
+
+            # start timer before any requests
+            start = time.time()
+
+            # Phase 1: metadata discovery (skip if already provided)
             if discovered_schema is None:
                 metadata_response = self._discover_relevant_schema(user_question)
                 discovered_schema = metadata_response.get("answer", "")
@@ -223,22 +227,59 @@ class GenericDecisionEngine:
             else:
                 metadata_response = {"answer": discovered_schema}
 
+            # Phase 2: data execution
             data_response = self._execute_reasoning(
                 user_question,
                 discovered_schema,
             )
 
+            # stop timer after both phases
+            end = time.time()
+            total_latency = end - start
+
+            # helper to extract tokens from a phase response
+            def _extract_tokens(resp: Dict[str, Any]) -> int:
+                if not isinstance(resp, dict):
+                    return 0
+                # common key names we might encounter
+                for key in ("usage", "tokens", "token_usage"):
+                    if key in resp and isinstance(resp[key], dict):
+                        # look for typical total/used fields
+                        return resp[key].get("total_tokens") or resp[key].get("used_tokens") or 0
+                    elif key in resp and isinstance(resp[key], int):
+                        return resp[key]
+                return 0
+
+            tokens_metadata = _extract_tokens(metadata_response)
+            tokens_data = _extract_tokens(data_response)
+            total_tokens = tokens_metadata + tokens_data
+
+            # if the response itself includes a model key override
+            model_from_resp = None
+            for resp in (metadata_response, data_response):
+                if isinstance(resp, dict) and "model" in resp:
+                    model_from_resp = resp.get("model")
+                    break
+
+            if model_from_resp:
+                model_used = model_from_resp
+
             return {
                 "status": "success",
                 "metadata_phase": metadata_response,
                 "execution_phase": data_response,
+                "metrics": {
+                    "time_out": total_latency,
+                    "used_tokens": total_tokens,
+                    "model_llm": model_used,
+                },
             }
 
-        except Exception as e:
+        except RuntimeError as run_err:
             return {
                 "status": "error",
-                "message": str(e),
+                "message": str(run_err),
             }
         finally:
-            # Restore original params
+            # Restore original params regardless of success/failure
             self.__class__.DEFAULT_PARAMS = original_params
