@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import DATASETS from '../utils/datasets';
 
 const STEP_LABELS = ['Question', 'Filters'];
 
@@ -6,6 +7,52 @@ function Stepper({ onSubmit, loading }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
+    const [columnSearch, setColumnSearch] = useState('');
+
+    // voice recognition state
+    const [listening, setListening] = useState(false);
+    const recognitionRef = useRef(null);
+
+    const startVoice = () => {
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            alert('Tu navegador no soporta reconocimiento de voz');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-ES';
+        recognition.interimResults = false;
+
+        recognition.onstart = () => setListening(true);
+        recognition.onend = () => setListening(false);
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setQuestion((prev) =>
+                prev ? prev + ' ' + transcript : transcript
+            );
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+    };
+
+    // For each dataset, track which columns are selected (all by default)
+    const [tableColumns, setTableColumns] = useState({});
+
+    const datasetNames = useMemo(() => Object.keys(DATASETS), []);
+
+    // Initialize all columns as selected for all datasets
+    useEffect(() => {
+        const initialState = {};
+        datasetNames.forEach((name) => {
+            initialState[name] = [...DATASETS[name]];
+        });
+        setTableColumns(initialState);
+    }, [datasetNames]);
 
     const canNext = () => {
         if (currentStep === 0) return question.trim() !== '';
@@ -81,7 +128,7 @@ function Stepper({ onSubmit, loading }) {
                         <p className="text-sm text-gray-400">
                             Describe what you want to analyze. Be as specific as possible about the insights you're looking for.
                         </p>
-                        <div className="flex-1 flex flex-col">
+                        <div className="flex-1 flex flex-col relative">
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
@@ -89,6 +136,20 @@ function Stepper({ onSubmit, loading }) {
                                 rows={6}
                                 className="w-full flex-1 px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
                             />
+
+                            {/* 🎤 Botón micrófono */}
+                            <button
+                                type="button"
+                                onClick={startVoice}
+                                className={`absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all
+                                    ${listening
+                                        ? 'bg-red-500 animate-pulse'
+                                        : 'bg-[#f47721] hover:bg-[#ff9f56]'
+                                    }`}
+                                title="Hablar"
+                            >
+                                🎤
+                            </button>
                         </div>
                     </div>
                 )}
