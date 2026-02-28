@@ -46,9 +46,11 @@ engine = GenericDecisionEngine()
 @router.post("/decide", response_model=DecisionResponse)
 def decide(
     request: DecisionRequest,
+    session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    """Process a user question through the decision engine and return the answer. This endpoint is protected and requires authentication."""
+    """Process a user question through the decision engine, persist it in the
+    database with the answer, and return the result. Requires authentication."""
     try:
         result = engine.answer(request.question)
 
@@ -59,7 +61,16 @@ def decide(
             )
 
         answer_text = result.get("execution_phase", {}).get("answer", "")
-        return DecisionResponse(status="success", answer=answer_text)
+
+        # Persist the question + answer so it appears in the user's history
+        question_in = QuestionCreate(title=request.question, answer=answer_text)
+        saved = create_question(session, question_in, owner_id=current_user.id)
+
+        return DecisionResponse(
+            status="success",
+            answer=answer_text,
+            question_id=saved.id,
+        )
 
     except Exception as e:
         raise HTTPException(

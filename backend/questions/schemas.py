@@ -1,18 +1,15 @@
-from typing import List
-
 from pydantic import BaseModel
 
 
 class QuestionCreate(BaseModel):
     title: str
-    answers: List[str]
-    dataset: str
-    columns: List[str]
-    # note: user_id is not accepted from client; server sets the owner from the auth token
+    answer: str
 
 
-class QuestionRead(QuestionCreate):
+class QuestionRead(BaseModel):
     id: int
+    title: str
+    answer: str
     user_id: int
 
     model_config = {"from_attributes": True}
@@ -26,3 +23,4 @@ class DecisionResponse(BaseModel):
     status: str
     answer: str | None = None
     error: str | None = None
+    question_id: int | None = None

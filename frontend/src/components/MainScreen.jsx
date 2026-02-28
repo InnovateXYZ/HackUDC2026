@@ -69,6 +69,8 @@ function MainScreen() {
                         answer: data.answer,
                         restrictions,
                     });
+                    // Refresh sidebar history so the new question appears
+                    await fetchHistory();
                 }
             } else {
                 const err = await res.json().catch(() => ({}));

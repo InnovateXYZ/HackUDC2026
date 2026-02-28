@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import Optional
 
-from sqlalchemy import Column, JSON
 from sqlmodel import Field, SQLModel
 
 
@@ -9,16 +8,12 @@ class Question(SQLModel, table=True):
 
     Fields:
     - id: primary key
-    - title: question title
-    - answers: list of answer strings (stored as JSON)
-    - dataset: dataset identifier or name
-    - columns: list of column names (stored as JSON)
+    - title: the question text asked by the user
+    - answer: the answer returned by the decision engine
+    - user_id: foreign key linking the question to its owner
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
-    answers: List[str] = Field(sa_column=Column(JSON), default_factory=list)
-    dataset: str
-    columns: List[str] = Field(sa_column=Column(JSON), default_factory=list)
-    # Link this question to a user (optional). Use the users table's id as FK.
+    answer: str
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")

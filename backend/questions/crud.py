@@ -10,9 +10,7 @@ def create_question(
 ) -> Question:
     question = Question(
         title=question_in.title,
-        answers=question_in.answers,
-        dataset=question_in.dataset,
-        columns=question_in.columns,
+        answer=question_in.answer,
         user_id=owner_id,
     )
     session.add(question)
