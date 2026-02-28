@@ -34,3 +34,13 @@ class LoginData(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenWithUser(Token):
+    # Include basic user info alongside token when logging in
+    user: UserRead
