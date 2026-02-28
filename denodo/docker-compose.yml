@@ -11,20 +11,6 @@ services:
     volumes:
       - ./config/denodo.lic:/opt/denodo/conf/denodo.lic:ro
       - ./data:/home/data
-#     - ./drivers/postgresql-42.7.10.jar:/opt/denodo/lib/extensions/jdbc-drivers/postgresql-42.7.10.jar:ro
-#    environment:
-#      # PostgreSQL
-#      - DENODO_DATABASE_PROVIDER=postgresql
-#      - DENODO_DATABASE_PROVIDER_VERSION=14
-#      - DENODO_DATABASE_URI=jdbc:postgresql://db:5432/denodo_metadata
-#      - DENODO_DATABASE_USER=denodo_user
-#      - DENODO_DATABASE_PASSWORD=change_for_prodution
-#      - DENODO_DATABASE_SCHEMA=public
-#      - DENODO_DATABASE_DRIVER=org.postgresql.Driver
-#      - DENODO_DATABASE_DRIVER_EXTERNAL=/opt/denodo/lib/extensions/jdbc-drivers/postgresql-42.7.10.jar
-#      - DENODO_DATABASE_CLASSPATH=/opt/denodo/lib/extensions/jdbc-drivers/
-#      # WARNING: only true for reset
-#      - DENODO_DATABASE_RESET=false
     command: --vdpserver --datacatalog --designstudio
     networks:
       - internal
@@ -46,20 +32,6 @@ services:
     networks:
       - internal
     restart: on-failure
-
-#  db:
-#    image: postgres:14
-#    container_name: postgres-denodo
-#    environment:
-#      POSTGRES_USER: denodo_user
-#      POSTGRES_PASSWORD: change_for_prodution
-#      POSTGRES_DB: denodo_metadata
-#    ports:
-#      - "5432:5432"
-#    volumes:
-#      - ./postgres_data:/var/lib/postgresql/data
-#    networks:
-#      - internal
 
 networks:
   internal:
