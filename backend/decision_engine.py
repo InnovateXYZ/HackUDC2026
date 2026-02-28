@@ -244,6 +244,13 @@ class GenericDecisionEngine:
     REPORT_TEMPLATE = (
         "You are a senior data analyst. Using ONLY the data provided below, "
         "generate a professional analytical report in **Markdown**.\n\n"
+        "CRITICAL LANGUAGE RULE: Detect the language of the USER QUESTION below "
+        "and write the **ENTIRE** report — including ALL section headings, "
+        "subheadings, body text, table headers, recommendations, and every "
+        "single word — in that SAME language. For example, if the question is "
+        'in Spanish, the heading must be "## 📋 Resumen Ejecutivo" instead of '
+        '"## 📋 Executive Summary", and so on for every section. Do NOT leave '
+        "any heading or text in English unless the user question is in English.\n\n"
         'USER QUESTION:\n"{user_question}"\n\n'
         "USER PROFILE (use this to personalise the report — tone, focus, "
         "and recommendations):\n"
@@ -255,14 +262,15 @@ class GenericDecisionEngine:
         "```\n{raw_data}\n```\n\n"
         "VQL QUERY USED (for methodology reference):\n"
         "```sql\n{vql}\n```\n\n"
-        "INSTRUCTIONS — You MUST produce ALL of the following sections. "
+        "INSTRUCTIONS — You MUST produce ALL of the following sections "
+        "(translate every section title to the language of the user question). "
         "Do NOT skip any section. If a section has limited relevance, still "
-        "include it with a brief note. Write the ENTIRE report in the SAME "
-        "language as the user question (e.g. if it is in Spanish, write "
-        "everything in Spanish). Personalise the report for the user: "
+        "include it with a brief note. Personalise the report for the user: "
         "address them by name when available, tailor insights and "
         "recommendations to their stated preferences, date of birth, and "
         "interests.\n\n"
+        "REQUIRED SECTIONS (shown here in English — you MUST translate the "
+        "titles to match the user question language):\n\n"
         "## 📋 Executive Summary\n"
         "A concise paragraph (3-5 sentences) that **directly and unambiguously** "
         "answers the user's question. State the conclusion or decision clearly "
@@ -298,6 +306,9 @@ class GenericDecisionEngine:
         "- Prioritize clarity and readability.\n"
         "- Every claim MUST be backed by the provided data.\n"
         "- Do NOT invent data that is not present above.\n"
+        "- REMEMBER: Translate ALL section titles and ALL text to the "
+        "language of the user question. Nothing should remain in English "
+        "unless the user question is in English.\n"
     )
 
     def _generate_report(

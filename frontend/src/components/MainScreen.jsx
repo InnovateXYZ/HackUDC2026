@@ -162,7 +162,7 @@ function MainScreen() {
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-white mb-1">Analyzing your question...</h3>
                             <p className="text-sm text-gray-400">
-                                The AI is discovering relevant data and generating your answer.
+                                The AI is discovering relevant data and generating your report.
                             </p>
                             <p className="text-xs text-gray-500 mt-2">This may take a moment</p>
                         </div>
