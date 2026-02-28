@@ -2,28 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Small global presets to keep a similar look to the previous CSS while
-   leveraging Tailwind utilities in components. */
-
+/* Semantic Color Variables - Denodo Palette */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Semantic Colors */
+  --color-denodo: #f0514a;
+  --color-accent: #006699;
+  --color-base: #143244;
+  --color-surface-dark0: #112533;
+  --color-surface-light0: #ffffff;
+  --color-text: #ffffff;
+  --color-text-alt: #006699;
+  --color-overlay-light0: #f3f4f5;
 }
 
 body {
-  @apply min-h-screen antialiased bg-[#242424] text-white;
+  @apply min-h-screen antialiased bg-white text-text;
+  background-color: var(--color-overlay-light0);
+  color: var(--color-text-alt);
   margin: 0;
 }
 
-/* Provide a subtle component base for buttons */
+/* Semantic Components */
 @layer components {
   .btn-primary {
-    @apply bg-[#f47721] text-white py-2 px-4 rounded-md border-none;
+    @apply hover:opacity-90 py-2 px-4 rounded-md border-none cursor-pointer transition-opacity font-medium;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .btn-secondary {
+    @apply hover:opacity-90 py-2 px-4 rounded-md border-none cursor-pointer transition-opacity font-medium;
+    background-color: var(--color-base);
+    color: var(--color-text);
+  }
+
+  .btn-outline {
+    @apply border-2 py-2 px-4 rounded-md transition-colors font-medium;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .btn-outline:hover {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  /* Banner Component */
+  .banner {
+    @apply py-4 px-6 rounded-md;
+    background-color: var(--color-base);
+    color: var(--color-text);
+  }
+
+  /* Card Component */
+  .card {
+    @apply rounded-lg p-6 shadow-md;
+    background-color: var(--color-surface-dark0);
+    color: var(--color-text);
+  }
+
+  /* Heading Styles */
+  .heading-primary {
+    @apply text-2xl font-bold;
+    color: var(--color-text-alt);
+  }
+
+  .heading-secondary {
+    @apply text-lg font-semibold;
+    color: var(--color-text-alt);
+  }
+
+  /* Input Base Style */
+  .input-base {
+    @apply border rounded-md px-3 py-2 outline-none transition-colors;
+    background-color: var(--color-overlay-light0);
+    color: var(--color-text-alt);
+    border-color: var(--color-overlay-light0);
+  }
+
+  .input-base:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(240, 81, 74, 0.2);
   }
 }
 
 @media (prefers-color-scheme: light) {
   body {
-    @apply bg-white text-[#213547];
+    background-color: var(--color-overlay-light0);
+    color: var(--color-text-alt);
   }
 }
 

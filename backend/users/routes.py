@@ -9,7 +9,7 @@ from .crud import (
     get_user_by_email,
     authenticate_user,
 )
-from .auth import create_access_token
+from .auth import create_access_token, get_current_user
 from .schemas import TokenWithUser
 
 router = APIRouter()
@@ -41,3 +41,9 @@ def login(data: LoginData, session: Session = Depends(get_session)):
     access_token = create_access_token({"sub": str(user.id)})
 
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+
+@router.post("/logout")
+def logout(current_user = Depends(get_current_user)):
+    """Logout endpoint - token is invalidated on frontend"""
+    return {"message": "Successfully logged out"}

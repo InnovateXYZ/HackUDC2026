@@ -17,11 +17,11 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen">
         <Routes>
-          <Route path="/" element={<Navigate to="/chat" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route
-            path="/chat"
+            path="/home"
             element={
               <RequireAuth>
                 <MainScreen />
