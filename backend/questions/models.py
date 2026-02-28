@@ -39,3 +39,4 @@ class Question(SQLModel, table=True):
         default_factory=datetime.utcnow, description="Timestamp of creation"
     )
     model_llm: Optional[str] = Field(default=None, description="LLM model used")
+    like: bool = Field(default=True, description="User feedback: True=like, False=dislike")

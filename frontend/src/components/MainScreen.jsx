@@ -103,9 +103,11 @@ function MainScreen() {
                     setError(data.error || 'Decision engine returned an error');
                 } else {
                     setSelectedQuestion({
+                        id: data.question_id,
                         title: question,
                         answer: data.answer,
                         restrictions,
+                        like: true,
                     });
                     // Refresh sidebar history so the new question appears
                     await fetchHistory();
@@ -137,9 +139,12 @@ function MainScreen() {
         if (selectedQuestion) {
             return (
                 <ReportView
+                    questionId={selectedQuestion.id}
                     question={selectedQuestion.title}
                     answer={selectedQuestion.answer}
                     restrictions={selectedQuestion.restrictions}
+                    like={selectedQuestion.like}
+                    onLikeChange={(newLike) => setSelectedQuestion(prev => ({ ...prev, like: newLike }))}
                     onNewQuery={handleNewChat}
                 />
             );

@@ -14,7 +14,7 @@ from .schemas import (
     MetadataRequest,
     MetadataResponse,
 )
-from .crud import create_question, get_questions_by_user
+from .crud import create_question, get_questions_by_user, update_question_like
 from ..decision_engine import GenericDecisionEngine
 
 router = APIRouter(prefix="/questions")
@@ -148,3 +148,17 @@ def decide(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error processing decision: {str(e)}",
         )
+
+
+@router.patch("/{question_id}/like")
+def set_like(
+    question_id: int,
+    like: bool,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Set the like/dislike value for a question."""
+    question = update_question_like(session, question_id, like)
+    if question is None or question.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return {"status": "ok", "like": question.like}

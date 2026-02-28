@@ -30,3 +30,15 @@ def get_questions_by_user(session: Session, user_id: int) -> list[Question]:
     statement = select(Question).where(Question.user_id == user_id)
     results = session.exec(statement).all()
     return results
+
+
+def update_question_like(session: Session, question_id: int, like: bool) -> Question | None:
+    """Update the like field of a question."""
+    question = session.get(Question, question_id)
+    if question is None:
+        return None
+    question.like = like
+    session.add(question)
+    session.commit()
+    session.refresh(question)
+    return question

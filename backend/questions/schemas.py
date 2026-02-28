@@ -21,6 +21,7 @@ class QuestionRead(BaseModel):
     answer: str
     user_id: int
     restrictions: Optional[str] = None
+    like: bool
 
     # metrics
     time_out: Optional[float] = None
