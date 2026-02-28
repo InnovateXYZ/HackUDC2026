@@ -12,8 +12,11 @@
         fastapi
         fastapi-cli
         sqlmodel
+        sqlalchemy
+        pydantic
         pylint
         uvicorn
+        email-validator
       ];
     in
     {
