@@ -24,6 +24,8 @@ CREATE OR REPLACE FOLDER '/cars' ;
 
 CREATE OR REPLACE FOLDER '/laptops' ;
 
+CREATE OR REPLACE FOLDER '/olympic_summer_games' ;
+
 CREATE OR REPLACE FOLDER '/rent_prices' ;
 
 CREATE OR REPLACE FOLDER '/stocks' ;
@@ -43,6 +45,14 @@ CREATE OR REPLACE FOLDER '/stocks' ;
 # #######################################
 # DATASOURCES
 # #######################################
+CREATE OR REPLACE DATASOURCE DF athletesdatasource
+    FOLDER = '/olympic_summer_games'
+    ROUTE LOCAL 'LocalConnection' '/home/data/olympic_summer_games/athletes.csv' URIPATTERN = '' FILENAMEPATTERN = ''
+    CHARSET = 'UTF-8'
+    COLUMNDELIMITER = ','
+    ENDOFLINEDELIMITER = '\n'
+    HEADER = TRUE;
+
 CREATE OR REPLACE DATASOURCE DF barcelonarentdataset
     FOLDER = '/rent_prices'
     ROUTE LOCAL 'LocalConnection' '/home/data/rents/Barcelona_rent_price.csv' URIPATTERN = '' FILENAMEPATTERN = ''
@@ -56,6 +66,14 @@ CREATE OR REPLACE DATASOURCE DF booksdataset
     ROUTE LOCAL 'LocalConnection' '/home/data/books/BooksDatasetClean.csv' URIPATTERN = '' FILENAMEPATTERN = ''
     CHARSET = 'UTF-8'
     COLUMNDELIMITER = ','
+    ENDOFLINEDELIMITER = '\n'
+    HEADER = TRUE;
+
+CREATE OR REPLACE DATASOURCE DF booksdataset2
+    FOLDER = '/books'
+    ROUTE LOCAL 'LocalConnection' '/home/data/books/books.csv' URIPATTERN = '' FILENAMEPATTERN = ''
+    CHARSET = 'UTF-8'
+    COLUMNDELIMITER = ';'
     ENDOFLINEDELIMITER = '\n'
     HEADER = TRUE;
 
@@ -75,11 +93,27 @@ CREATE OR REPLACE DATASOURCE DF laptopsdataset
     ENDOFLINEDELIMITER = '\n'
     HEADER = TRUE;
 
+CREATE OR REPLACE DATASOURCE DF ratingsdataset
+    FOLDER = '/books'
+    ROUTE LOCAL 'LocalConnection' '/home/data/books/ratings.csv' URIPATTERN = '' FILENAMEPATTERN = ''
+    CHARSET = 'UTF-8'
+    COLUMNDELIMITER = ';'
+    ENDOFLINEDELIMITER = '\n'
+    HEADER = TRUE;
+
 CREATE OR REPLACE DATASOURCE DF stocksdataset
     FOLDER = '/stocks'
     ROUTE LOCAL 'LocalConnection' '/home/data/stocks/indexProcessed.csv' URIPATTERN = '' FILENAMEPATTERN = ''
     CHARSET = 'UTF-8'
     COLUMNDELIMITER = ','
+    ENDOFLINEDELIMITER = '\n'
+    HEADER = TRUE;
+
+CREATE OR REPLACE DATASOURCE DF usersdataset
+    FOLDER = '/books'
+    ROUTE LOCAL 'LocalConnection' '/home/data/books/users.csv' URIPATTERN = '' FILENAMEPATTERN = ''
+    CHARSET = 'UTF-8'
+    COLUMNDELIMITER = ';'
     ENDOFLINEDELIMITER = '\n'
     HEADER = TRUE;
 
@@ -92,6 +126,48 @@ ALTER DATABASE hackudc
 # #######################################
 # WRAPPERS
 # #######################################
+CREATE OR REPLACE WRAPPER DF athletesdatasource
+    FOLDER = '/olympic_summer_games'
+    DATASOURCENAME=athletesdatasource
+    OUTPUTSCHEMA (
+        code = 'code',
+        current = 'current',
+        name = 'name',
+        name_short = 'name_short',
+        name_tv = 'name_tv',
+        gender = 'gender',
+        function = 'function',
+        country_code = 'country_code',
+        country = 'country',
+        country_long = 'country_long',
+        nationality = 'nationality',
+        nationality_long = 'nationality_long',
+        nationality_code = 'nationality_code',
+        height = 'height',
+        weight = 'weight',
+        disciplines = 'disciplines',
+        events = 'events',
+        birth_date = 'birth_date',
+        birth_place = 'birth_place',
+        birth_country = 'birth_country',
+        residence_place = 'residence_place',
+        residence_country = 'residence_country',
+        nickname = 'nickname',
+        hobbies = 'hobbies',
+        occupation = 'occupation',
+        education = 'education',
+        family = 'family',
+        lang = 'lang',
+        coach = 'coach',
+        reason = 'reason',
+        hero = 'hero',
+        influence = 'influence',
+        philosophy = 'philosophy',
+        sporting_relatives = 'sporting_relatives',
+        ritual = 'ritual',
+        other_sports = 'other_sports'
+    );
+
 CREATE OR REPLACE WRAPPER DF barcelonarentdataset
     FOLDER = '/rent_prices'
     DATASOURCENAME=barcelonarentdataset
@@ -116,6 +192,20 @@ CREATE OR REPLACE WRAPPER DF booksdataset
         pricestartingwith_0 = 'Price Starting With ($)',
         publishdatemonth_0 = 'Publish Date (Month)',
         publishdateyear_0 = 'Publish Date (Year)'
+    );
+
+CREATE OR REPLACE WRAPPER DF booksdataset2
+    FOLDER = '/books'
+    DATASOURCENAME=booksdataset2
+    OUTPUTSCHEMA (
+        isbn = 'ISBN',
+        booktitle_0 = 'Book-Title',
+        bookauthor_0 = 'Book-Author',
+        yearofpublication_0 = 'Year-Of-Publication',
+        publisher = 'Publisher',
+        id_2 = '',
+        id_1 = '',
+        id_0 = ''
     );
 
 CREATE OR REPLACE WRAPPER DF carsdataset
@@ -212,6 +302,15 @@ CREATE OR REPLACE WRAPPER DF laptopsdataset
         securitychip_0 = 'Security Chip'
     );
 
+CREATE OR REPLACE WRAPPER DF ratingsdataset
+    FOLDER = '/books'
+    DATASOURCENAME=ratingsdataset
+    OUTPUTSCHEMA (
+        userid_0 = '"User-ID"',
+        isbn_0 = '"ISBN"',
+        bookrating_0 = '"Book-Rating"'
+    );
+
 CREATE OR REPLACE WRAPPER DF stocksdataset
     FOLDER = '/stocks'
     DATASOURCENAME=stocksdataset
@@ -225,6 +324,15 @@ CREATE OR REPLACE WRAPPER DF stocksdataset
         adjclose_0 = 'Adj Close',
         volume = 'Volume',
         closeusd = 'CloseUSD'
+    );
+
+CREATE OR REPLACE WRAPPER DF usersdataset
+    FOLDER = '/books'
+    DATASOURCENAME=usersdataset
+    OUTPUTSCHEMA (
+        userid_0 = '"User-ID"',
+        location_0 = '"Location"',
+        age_0 = '"Age"'
     );
 
 # #######################################
@@ -242,6 +350,92 @@ CREATE OR REPLACE WRAPPER DF stocksdataset
 # #######################################
 # BASE VIEWS
 # #######################################
+CREATE OR REPLACE TABLE athletesdatasourcebaseview I18N us_pst (
+        code:text,
+        current:text,
+        name:text,
+        name_short:text,
+        name_tv:text,
+        gender:text,
+        function:text,
+        country_code:text,
+        country:text,
+        country_long:text,
+        nationality:text,
+        nationality_long:text,
+        nationality_code:text,
+        height:text,
+        weight:text,
+        disciplines:text,
+        events:text,
+        birth_date:text,
+        birth_place:text,
+        birth_country:text,
+        residence_place:text,
+        residence_country:text,
+        nickname:text,
+        hobbies:text,
+        occupation:text,
+        education:text,
+        family:text,
+        lang:text,
+        coach:text,
+        reason:text,
+        hero:text,
+        influence:text,
+        philosophy:text,
+        sporting_relatives:text,
+        ritual:text,
+        other_sports:text
+    )
+    FOLDER = '/olympic_summer_games'
+    CACHE OFF
+    TIMETOLIVEINCACHE DEFAULT
+    ADD SEARCHMETHOD athletesdatasource(
+        I18N us_pst
+        CONSTRAINTS (
+             ADD code NOS ZERO ()
+             ADD current NOS ZERO ()
+             ADD name NOS ZERO ()
+             ADD name_short NOS ZERO ()
+             ADD name_tv NOS ZERO ()
+             ADD gender NOS ZERO ()
+             ADD function NOS ZERO ()
+             ADD country_code NOS ZERO ()
+             ADD country NOS ZERO ()
+             ADD country_long NOS ZERO ()
+             ADD nationality NOS ZERO ()
+             ADD nationality_long NOS ZERO ()
+             ADD nationality_code NOS ZERO ()
+             ADD height NOS ZERO ()
+             ADD weight NOS ZERO ()
+             ADD disciplines NOS ZERO ()
+             ADD events NOS ZERO ()
+             ADD birth_date NOS ZERO ()
+             ADD birth_place NOS ZERO ()
+             ADD birth_country NOS ZERO ()
+             ADD residence_place NOS ZERO ()
+             ADD residence_country NOS ZERO ()
+             ADD nickname NOS ZERO ()
+             ADD hobbies NOS ZERO ()
+             ADD occupation NOS ZERO ()
+             ADD education NOS ZERO ()
+             ADD family NOS ZERO ()
+             ADD lang NOS ZERO ()
+             ADD coach NOS ZERO ()
+             ADD reason NOS ZERO ()
+             ADD hero NOS ZERO ()
+             ADD influence NOS ZERO ()
+             ADD philosophy NOS ZERO ()
+             ADD sporting_relatives NOS ZERO ()
+             ADD ritual NOS ZERO ()
+             ADD other_sports NOS ZERO ()
+        )
+        OUTPUTLIST (birth_country, birth_date, birth_place, coach, code, country, country_code, country_long, current, disciplines, education, events, family, function, gender, height, hero, hobbies, influence, lang, name, name_short, name_tv, nationality, nationality_code, nationality_long, nickname, occupation, other_sports, philosophy, reason, residence_country, residence_place, ritual, sporting_relatives, weight
+        )
+        WRAPPER (df athletesdatasource)
+    );
+
 CREATE OR REPLACE TABLE barcelonarentdataset I18N us_pst (
         year:text (description = 'The calendar year of the recorded data'),
         trimester:text (description = 'The specific quarter or trimester of the year'),
@@ -300,6 +494,38 @@ CREATE OR REPLACE TABLE booksdatasetbaseview I18N us_pst (
         OUTPUTLIST (authors, category, description, pricestartingwith_0, publishdatemonth_0, publishdateyear_0, publisher, title
         )
         WRAPPER (df booksdataset)
+    );
+
+CREATE OR REPLACE TABLE booksdatasetbaseview2 I18N us_pst (
+        isbn:text (description = 'International Standard Book Number identifier'),
+        booktitle_0:text (description = 'The official title of the book record'),
+        bookauthor_0:text (description = 'The primary author of the book'),
+        yearofpublication_0:text (description = 'The specific year the book was released'),
+        publisher:text (description = 'The company responsible for the book publication'),
+        id_2:text (description = 'Secondary internal unique identifier for the book system'),
+        id_1:text (description = 'Primary internal unique identifier for the record'),
+        id_0:text (description = 'Base reference identifier for the dataset entry')
+    )
+    FOLDER = '/books'
+    DESCRIPTION = 'Master catalog of book entities available on Amazon. Contains descriptive metadata including ISBN, Title, Author, Year of Publication, and Publisher. This is the primary dimension table for product identification. Use this view to analyze content characteristics, author popularity, and historical publishing trends.'
+    PRIMARY KEY ( 'isbn' , 'booktitle_0' )
+    CACHE OFF
+    TIMETOLIVEINCACHE DEFAULT
+    ADD SEARCHMETHOD booksdataset2(
+        I18N us_pst
+        CONSTRAINTS (
+             ADD isbn NOS ZERO ()
+             ADD booktitle_0 NOS ZERO ()
+             ADD bookauthor_0 NOS ZERO ()
+             ADD yearofpublication_0 NOS ZERO ()
+             ADD publisher NOS ZERO ()
+             ADD id_2 NOS ZERO ()
+             ADD id_1 NOS ZERO ()
+             ADD id_0 NOS ZERO ()
+        )
+        OUTPUTLIST (bookauthor_0, booktitle_0, id_0, id_1, id_2, isbn, publisher, yearofpublication_0
+        )
+        WRAPPER (df booksdataset2)
     );
 
 CREATE OR REPLACE TABLE carsdatasetbaseview I18N us_pst (
@@ -498,6 +724,28 @@ CREATE OR REPLACE TABLE laptopsdatasetbaseview I18N us_pst (
         WRAPPER (df laptopsdataset)
     );
 
+CREATE OR REPLACE TABLE ratingsdatasetbaseview I18N us_pst (
+        userid_0:text (description = 'Unique identifier for the user providing the rating'),
+        isbn_0:text (description = 'International Standard Book Number (ISBN) of the rated book'),
+        bookrating_0:text (description = 'Numeric score assigned to the book by the user')
+    )
+    FOLDER = '/books'
+    DESCRIPTION = 'Transactional fact table containing historical user-provided ratings for books. Includes User-ID, ISBN/Book-ID, and the numerical Rating score. This is the core dataset for collaborative filtering, recommendation engines, and sentiment analysis. It links user behavior to specific products.'
+    PRIMARY KEY ( 'userid_0' , 'isbn_0' )
+    CACHE OFF
+    TIMETOLIVEINCACHE DEFAULT
+    ADD SEARCHMETHOD ratingsdataset(
+        I18N us_pst
+        CONSTRAINTS (
+             ADD userid_0 NOS ZERO ()
+             ADD isbn_0 NOS ZERO ()
+             ADD bookrating_0 NOS ZERO ()
+        )
+        OUTPUTLIST (bookrating_0, isbn_0, userid_0
+        )
+        WRAPPER (df ratingsdataset)
+    );
+
 CREATE OR REPLACE TABLE stocksdatasetbaseview I18N us_pst (
         index:text (description = 'Unique row index or record identifier'),
         date:text (description = 'Trading date for the stock record'),
@@ -532,10 +780,43 @@ CREATE OR REPLACE TABLE stocksdatasetbaseview I18N us_pst (
         WRAPPER (df stocksdataset)
     );
 
+CREATE OR REPLACE TABLE usersdatasetbaseview I18N us_pst (
+        userid_0:text (description = 'Unique identification number for the Amazon user'),
+        location_0:text (description = 'Geographic information including city, state, or country of the user'),
+        age_0:text (description = 'Recorded age of the user at the time of data collection')
+    )
+    FOLDER = '/books'
+    DESCRIPTION = 'Profile data for Amazon customers who have interacted with the book category. Includes unique User-ID and demographic attributes such as Location and Age. Use this view to segment rating behavior by geographic region or age groups. It serves as the user dimension for behavioral analysis.'
+    PRIMARY KEY ( 'userid_0' )
+    CACHE OFF
+    TIMETOLIVEINCACHE DEFAULT
+    ADD SEARCHMETHOD usersdataset(
+        I18N us_pst
+        CONSTRAINTS (
+             ADD userid_0 NOS ZERO ()
+             ADD location_0 NOS ZERO ()
+             ADD age_0 NOS ZERO ()
+        )
+        OUTPUTLIST (age_0, location_0, userid_0
+        )
+        WRAPPER (df usersdataset)
+    );
+
 # #######################################
 # VIEWS
 # #######################################
-# No views
+CREATE OR REPLACE VIEW booksdatasetbaseview2_j_booksdatasetbaseview FOLDER = '/books' DESCRIPTION = 'Join of the 2 datasets of books, this one have all the fields (join condition was booksdatasetbaseview2.booktitle_0 = booksdatasetbaseview.title OR booksdatasetbaseview2.bookauthor_0 = booksdatasetbaseview.authors)' 
+    PRIMARY KEY ( 'isbn' , 'booktitle_0' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview2.booktitle_0 AS booktitle_0, booksdatasetbaseview2.bookauthor_0 AS bookauthor_0, booksdatasetbaseview2.yearofpublication_0 AS yearofpublication_0, booksdatasetbaseview2.publisher AS publisher2, booksdatasetbaseview.title AS title, booksdatasetbaseview.authors AS authors, booksdatasetbaseview.description AS description, booksdatasetbaseview.category AS category, booksdatasetbaseview.publisher AS publisher, booksdatasetbaseview.pricestartingwith_0 AS pricestartingwith_0, booksdatasetbaseview.publishdatemonth_0 AS publishdatemonth_0, booksdatasetbaseview.publishdateyear_0 AS publishdateyear_0 FROM booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN booksdatasetbaseview AS booksdatasetbaseview ON (booksdatasetbaseview2.booktitle_0 = booksdatasetbaseview.title OR booksdatasetbaseview2.bookauthor_0 = booksdatasetbaseview.authors) ;
+
+ALTER VIEW booksdatasetbaseview2_j_booksdatasetbaseview
+ LAYOUT (booksdatasetbaseview2 = [382, 1, 200, 200], booksdatasetbaseview = [721, 9, 200, 200]);
+
+CREATE OR REPLACE VIEW booksdatasetbaseview2_j_ratingsdatasetbaseview_j_usersdatasetbaseview FOLDER = '/books' DESCRIPTION = 'Comprehensive Amazon Book Analytics dataset providing a 360-degree view of the recommendation ecosystem. This view performs a multi-way join between Books, Ratings, and User Profiles, synchronizing ISBN and User-ID identifiers. It enables direct correlation between user demographics—specifically age and geographic location—and book metadata like author, publisher, and year of publication. Use this integrated view for training recommendation engines, performing demographic-based sentiment analysis, and identifying cross-functional popularity trends across different market segments.' 
+    PRIMARY KEY ( 'isbn' , 'booktitle_0' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview2.booktitle_0 AS booktitle_0, booksdatasetbaseview2.bookauthor_0 AS bookauthor_0, booksdatasetbaseview2.yearofpublication_0 AS yearofpublication_0, booksdatasetbaseview2.publisher AS publisher, ratingsdatasetbaseview.userid_0 AS userid_0, ratingsdatasetbaseview.isbn_0 AS isbn_0, ratingsdatasetbaseview.bookrating_0 AS bookrating_0, usersdatasetbaseview.location_0 AS location_0, usersdatasetbaseview.age_0 AS age_0 FROM (booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN ratingsdatasetbaseview AS ratingsdatasetbaseview ON booksdatasetbaseview2.isbn = ratingsdatasetbaseview.isbn_0 ) INNER JOIN usersdatasetbaseview AS usersdatasetbaseview ON ratingsdatasetbaseview.userid_0 = usersdatasetbaseview.userid_0 ;
+
+ALTER VIEW booksdatasetbaseview2_j_ratingsdatasetbaseview_j_usersdatasetbaseview
+ LAYOUT (booksdatasetbaseview2 = [83, 58, 200, 200], ratingsdatasetbaseview = [522, 33, 200, 200], usersdatasetbaseview = [859, 124, 200, 200]);
+
 # #######################################
 # ASSOCIATIONS
 # #######################################
