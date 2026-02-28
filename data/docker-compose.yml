@@ -1,0 +1,39 @@
+services:
+  vdp:
+    image: harbor.open.denodo.com/denodo-express/denodo-platform:latest
+    container_name: vdp
+    hostname: vdp
+    platform: linux/amd64
+    ports:
+      - "9090:9090"
+      - "9999:9999"
+      - "9994:9994"
+    volumes:
+      - ./config/denodo.lic:/opt/denodo/conf/denodo.lic:ro
+      - ./data:/home/data
+    command: --vdpserver --datacatalog --designstudio
+    networks:
+      - ai-sdk-net
+    restart: unless-stopped
+
+  ai-sdk:
+    image: harbor.open.denodo.com/denodo-express/ai-sdk:latest
+    container_name: ai-sdk
+    platform: linux/amd64
+    ports:
+      - "8008:8008"
+      - "9992:9992"
+    volumes:
+      - ./config/chatbot_config.env:/opt/ai-sdk/sample_chatbot/chatbot_config.env
+      - ./config/sdk_config.env:/opt/ai-sdk/api/utils/sdk_config.env
+    depends_on:
+      - vdp
+    command: bash -c "python run.py both --host vdp --no-logs"
+    networks:
+      - ai-sdk-net
+    restart: on-failure
+
+networks:
+  ai-sdk-net:
+    name: ai-sdk-docker
+    driver: bridge
