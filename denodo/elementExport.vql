@@ -87,7 +87,7 @@ CREATE OR REPLACE DATASOURCE DF carsdataset
 
 CREATE OR REPLACE DATASOURCE DF laptopsdataset
     FOLDER = '/laptops'
-    ROUTE LOCAL 'LocalConnection' '/home/data/laptops/complete laptop data0.csv' URIPATTERN = '' FILENAMEPATTERN = ''
+    ROUTE LOCAL 'LocalConnection' '/home/data/laptops/laptop.csv' URIPATTERN = '' FILENAMEPATTERN = ''
     CHARSET = 'UTF-8'
     COLUMNDELIMITER = ','
     ENDOFLINEDELIMITER = '\n'
@@ -208,6 +208,17 @@ CREATE OR REPLACE WRAPPER DF booksdataset2
         id_0 = ''
     );
 
+CREATE OR REPLACE WRAPPER DF booksdatasetbaseview2
+    FOLDER = '/books'
+    DATASOURCENAME=booksdataset2
+    OUTPUTSCHEMA (
+        isbn = 'ISBN',
+        booktitle_0 = 'Book-Title',
+        bookauthor_0 = 'Book-Author',
+        yearofpublication_0 = 'Year-Of-Publication',
+        publisher = 'Publisher'
+    );
+
 CREATE OR REPLACE WRAPPER DF carsdataset
     FOLDER = '/cars'
     DATASOURCENAME=carsdataset
@@ -230,76 +241,46 @@ CREATE OR REPLACE WRAPPER DF laptopsdataset
     DATASOURCENAME=laptopsdataset
     OUTPUTSCHEMA (
         id_0 = '',
+        brand = 'brand',
         name = 'name',
-        userrating_0 = 'user rating',
-        price = 'Price',
-        salespackage_0 = 'Sales Package',
-        series = 'Series',
-        color = 'Color',
-        type = 'Type',
-        suitablefor_0 = 'Suitable For',
-        powersupply_0 = 'Power Supply',
-        batterycell_0 = 'Battery Cell',
-        msofficeprovided_0 = 'MS Office Provided',
-        dedicatedgraphicmemorytype_0 = 'Dedicated Graphic Memory Type',
-        dedicatedgraphicmemorycapacity_0 = 'Dedicated Graphic Memory Capacity',
-        processorbrand_0 = 'Processor Brand',
-        processorname_0 = 'Processor Name',
-        processorgeneration_0 = 'Processor Generation',
-        ssd = 'SSD',
-        ssdcapacity_0 = 'SSD Capacity',
-        ram = 'RAM',
-        ramtype_0 = 'RAM Type',
-        clockspeed_0 = 'Clock Speed',
-        expandablememory_0 = 'Expandable Memory',
-        cache = 'Cache',
-        graphicprocessor_0 = 'Graphic Processor',
-        numberofcores_0 = 'Number of Cores',
-        osarchitecture_0 = 'OS Architecture',
-        operatingsystem_0 = 'Operating System',
-        usbport_0 = 'USB Port',
-        hdmiport_0 = 'HDMI Port',
-        touchscreen = 'Touchscreen',
-        screensize_0 = 'Screen Size',
-        screenresolution_0 = 'Screen Resolution',
-        screentype_0 = 'Screen Type',
-        speakers = 'Speakers',
-        internalmic_0 = 'Internal Mic',
-        soundproperties_0 = 'Sound Properties',
-        wirelesslan_0 = 'Wireless LAN',
-        bluetooth = 'Bluetooth',
-        dimensions = 'Dimensions',
-        weight = 'Weight',
-        fingerprintsensor_0 = 'Finger Print Sensor',
-        keyboard = 'Keyboard',
-        backlitkeyboard_0 = 'Backlit Keyboard',
-        additionalfeatures_0 = 'Additional Features',
-        warrantysummary_0 = 'Warranty Summary',
-        warrantyservicetype_0 = 'Warranty Service Type',
-        coveredinwarranty_0 = 'Covered in Warranty',
-        notcoveredinwarranty_0 = 'Not Covered in Warranty',
-        domesticwarranty_0 = 'Domestic Warranty',
-        webcamera_0 = 'Web Camera',
-        batterybackup_0 = 'Battery Backup',
-        chipset = 'Chipset',
-        memoryslots_0 = 'Memory Slots',
-        ramfrequency_0 = 'RAM Frequency',
-        rj45 = 'RJ45',
-        soundchip_0 = 'Sound Chip',
-        brightness = 'Brightness',
-        laptopbag_0 = 'Laptop Bag',
-        otheraccessories_0 = 'Other Accessories',
-        hardwareinterface_0 = 'Hardware Interface',
-        facerecognition_0 = 'Face Recognition',
-        systemarchitecture_0 = 'System Architecture',
-        refreshrate_0 = 'Refresh Rate',
-        antivirus = 'Antivirus',
-        multicardslot_0 = 'Multi Card Slot',
-        nfcsupport_0 = 'NFC Support',
-        hddcapacity_0 = 'HDD Capacity',
-        stylusincluded_0 = 'Stylus Included',
-        vgaport_0 = 'VGA Port',
-        securitychip_0 = 'Security Chip'
+        price = 'price',
+        spec_rating = 'spec_rating',
+        processor = 'processor',
+        cpu = 'CPU',
+        ram = 'Ram',
+        ram_type = 'Ram_type',
+        rom = 'ROM',
+        rom_type = 'ROM_type',
+        gpu = 'GPU',
+        display_size = 'display_size',
+        resolution_width = 'resolution_width',
+        resolution_height = 'resolution_height',
+        os = 'OS',
+        warranty = 'warranty',
+        image = 'image'
+    );
+
+CREATE OR REPLACE WRAPPER DF laptopsdatasetbasicview
+    FOLDER = '/laptops'
+    DATASOURCENAME=laptopsdataset
+    OUTPUTSCHEMA (
+        id_0 = '',
+        brand = 'brand',
+        name = 'name',
+        price = 'price',
+        spec_rating = 'spec_rating',
+        processor = 'processor',
+        cpu = 'CPU',
+        ram = 'Ram',
+        ram_type = 'Ram_type',
+        rom = 'ROM',
+        rom_type = 'ROM_type',
+        gpu = 'GPU',
+        display_size = 'display_size',
+        resolution_width = 'resolution_width',
+        resolution_height = 'resolution_height',
+        os = 'OS',
+        warranty = 'warranty'
     );
 
 CREATE OR REPLACE WRAPPER DF ratingsdataset
@@ -351,8 +332,8 @@ CREATE OR REPLACE WRAPPER DF usersdataset
 # BASE VIEWS
 # #######################################
 CREATE OR REPLACE TABLE athletesdatasourcebaseview I18N us_pst (
-        code:text,
-        current:text,
+        code:long,
+        current:boolean,
         name:text,
         name_short:text,
         name_tv:text,
@@ -364,11 +345,11 @@ CREATE OR REPLACE TABLE athletesdatasourcebaseview I18N us_pst (
         nationality:text,
         nationality_long:text,
         nationality_code:text,
-        height:text,
-        weight:text,
+        height:int,
+        weight:int,
         disciplines:text,
         events:text,
-        birth_date:text,
+        birth_date:localdate,
         birth_place:text,
         birth_country:text,
         residence_place:text,
@@ -437,12 +418,12 @@ CREATE OR REPLACE TABLE athletesdatasourcebaseview I18N us_pst (
     );
 
 CREATE OR REPLACE TABLE barcelonarentdataset I18N us_pst (
-        year:text (description = 'The calendar year of the recorded data'),
-        trimester:text (description = 'The specific quarter or trimester of the year'),
+        year:int (description = 'The calendar year of the recorded data'),
+        trimester:int (description = 'The specific quarter or trimester of the year'),
         district:text (description = 'The administrative district name in Barcelona'),
         neighbourhood:text (description = 'The specific neighborhood name within the district'),
         average_rent_0:text (description = 'Calculated average rent value for the area'),
-        price:text (description = 'The specific price point or rental cost recorded')
+        price:float (description = 'The specific price point or rental cost recorded')
     )
     FOLDER = '/rent_prices'
     DESCRIPTION = 'This dataset includes data on price for rent in Barcelona, Spain. The data was collected for a period of 2014 - 2022 years, divided into trimesters. The prices go by neighbourhoods and districts. This dataset includes both prices per month and prices per square meter, so that you can easier compare them.'
@@ -470,9 +451,9 @@ CREATE OR REPLACE TABLE booksdatasetbaseview I18N us_pst (
         description:text (description = 'A brief description of the book.'),
         category:text (description = 'The category or genre to which the book belongs.'),
         publisher:text (description = 'The publishing house responsible for the book.'),
-        pricestartingwith_0:text (description = 'The initial price of the book in dollars ($).'),
+        pricestartingwith_0:float (description = 'The initial price of the book in dollars ($).'),
         publishdatemonth_0:text (description = 'The month in which the book was published.'),
-        publishdateyear_0:text (description = 'The year of publication.')
+        publishdateyear_0:int (description = 'The year of publication.')
     )
     FOLDER = '/books'
     DESCRIPTION = 'This dataset comprises information scraped from wonderbk.com, a popular online bookstore. The dataset contains details of 103,063 books, with key attributes such as title, authors, description, category, publisher, starting price, and publish date.'
@@ -497,21 +478,17 @@ CREATE OR REPLACE TABLE booksdatasetbaseview I18N us_pst (
     );
 
 CREATE OR REPLACE TABLE booksdatasetbaseview2 I18N us_pst (
-        isbn:text (description = 'International Standard Book Number identifier'),
+        isbn:long (description = 'International Standard Book Number identifier'),
         booktitle_0:text (description = 'The official title of the book record'),
         bookauthor_0:text (description = 'The primary author of the book'),
-        yearofpublication_0:text (description = 'The specific year the book was released'),
-        publisher:text (description = 'The company responsible for the book publication'),
-        id_2:text (description = 'Secondary internal unique identifier for the book system'),
-        id_1:text (description = 'Primary internal unique identifier for the record'),
-        id_0:text (description = 'Base reference identifier for the dataset entry')
+        yearofpublication_0:int (description = 'The specific year the book was released'),
+        publisher:text (description = 'The company responsible for the book publication')
     )
     FOLDER = '/books'
-    DESCRIPTION = 'Master catalog of book entities available on Amazon. Contains descriptive metadata including ISBN, Title, Author, Year of Publication, and Publisher. This is the primary dimension table for product identification. Use this view to analyze content characteristics, author popularity, and historical publishing trends.'
     PRIMARY KEY ( 'isbn' , 'booktitle_0' )
     CACHE OFF
     TIMETOLIVEINCACHE DEFAULT
-    ADD SEARCHMETHOD booksdataset2(
+    ADD SEARCHMETHOD booksdatasetbaseview2(
         I18N us_pst
         CONSTRAINTS (
              ADD isbn NOS ZERO ()
@@ -519,27 +496,24 @@ CREATE OR REPLACE TABLE booksdatasetbaseview2 I18N us_pst (
              ADD bookauthor_0 NOS ZERO ()
              ADD yearofpublication_0 NOS ZERO ()
              ADD publisher NOS ZERO ()
-             ADD id_2 NOS ZERO ()
-             ADD id_1 NOS ZERO ()
-             ADD id_0 NOS ZERO ()
         )
-        OUTPUTLIST (bookauthor_0, booktitle_0, id_0, id_1, id_2, isbn, publisher, yearofpublication_0
+        OUTPUTLIST (bookauthor_0, booktitle_0, isbn, publisher, yearofpublication_0
         )
-        WRAPPER (df booksdataset2)
+        WRAPPER (df booksdatasetbaseview2)
     );
 
 CREATE OR REPLACE TABLE carsdatasetbaseview I18N us_pst (
         companynames_0:text (description = 'The manufacturer or brand of the car.'),
         carsnames_0:text (description = 'The specific name or series of the car.'),
         engines:text (description = 'Information on engine specifications.'),
-        ccbatterycapacity_0:text (description = 'Engine displacement in cubic centimeters or battery capacity for electric cars.'),
-        horsepower:text (description = 'The power output of the car engine or motor.'),
-        totalspeed_0:text (description = 'The maximum speed the car can achieve.'),
-        performance0100kmh_0:text (description = 'The time it takes for the car to accelerate from 0 to 100 km/h.'),
+        ccbatterycapacity_0:int (description = 'Engine displacement in cubic centimeters or battery capacity for electric cars.'),
+        horsepower:int (description = 'The power output of the car engine or motor.'),
+        totalspeed_0:int (description = 'The maximum speed the car can achieve.'),
+        performance0100kmh_0:float (description = 'The time it takes for the car to accelerate from 0 to 100 km/h.'),
         carsprices_0:text (description = 'The car price listed in United States dollars.'),
         fueltypes_0:text (description = 'Specifies whether the car uses petrol, diesel, electricity, or hybrid fuel systems.'),
-        seats:text (description = 'The number of passengers the car can accommodate.'),
-        torque:text (description = 'The rotational force the engine generates.')
+        seats:int (description = 'The number of passengers the car can accommodate.'),
+        torque:int (description = 'The rotational force the engine generates.')
     )
     FOLDER = '/cars'
     DESCRIPTION = 'This is a comprehensive dataset on cars companies, models, engines, CC/battery capacities, horsepower, top speed, 0-100 km/h performance, prices (in US dollars), fuel types, seating capacity, and torque. This dataset is designed to serve car enthusiasts, automotive analysts, and students, enabling them to stay informed, conduct research, and work on impactful projects. Committed to supporting the global automotive community, I aim to continually enhance and expand this resource to empower innovation and informed decision making'
@@ -566,168 +540,58 @@ CREATE OR REPLACE TABLE carsdatasetbaseview I18N us_pst (
         WRAPPER (df carsdataset)
     );
 
-CREATE OR REPLACE TABLE laptopsdatasetbaseview I18N us_pst (
-        id_0:text (description = 'Unique identifier for the laptop record'),
-        name:text (description = 'Full commercial name of the laptop'),
-        userrating_0:text (description = 'Average user rating or score'),
-        price:text (description = 'Selling price of the device'),
-        salespackage_0:text (description = 'Items included in the box with the laptop'),
-        series:text (description = 'Product series or line from the manufacturer'),
-        color:text (description = 'External color of the laptop chassis'),
-        type:text (description = 'Category of laptop, e.g., Notebook, Gaming, 2-in-1'),
-        suitablefor_0:text (description = 'Target use case, e.g., Processing, Gaming, Everyday use'),
-        powersupply_0:text (description = 'Wattage and type of the power adapter'),
-        batterycell_0:text (description = 'Number of cells in the laptop battery'),
-        msofficeprovided_0:text (description = 'Indicates if Microsoft Office is pre-installed'),
-        dedicatedgraphicmemorytype_0:text (description = 'Type of dedicated VRAM, e.g., GDDR6'),
-        dedicatedgraphicmemorycapacity_0:text (description = 'Amount of dedicated graphics memory'),
-        processorbrand_0:text (description = 'Manufacturer of the CPU, e.g., Intel, AMD'),
-        processorname_0:text (description = 'Specific model name of the processor'),
-        processorgeneration_0:text (description = 'Generation of the processor'),
-        ssd:text (description = 'Indicates if the laptop has a Solid State Drive'),
-        ssdcapacity_0:text (description = 'Total storage capacity of the SSD'),
-        ram:text (description = 'Total amount of system memory'),
-        ramtype_0:text (description = 'Type of RAM installed, e.g., DDR4, LPDDR5'),
-        clockspeed_0:text (description = 'Base or boost clock frequency of the CPU'),
-        expandablememory_0:text (description = 'Maximum RAM capacity supported via upgrades'),
-        cache:text (description = 'Size of the processor cache memory'),
-        graphicprocessor_0:text (description = 'Model of the integrated or dedicated GPU'),
-        numberofcores_0:text (description = 'Number of physical processing cores'),
-        osarchitecture_0:text (description = 'Operating system bit architecture, e.g., 64-bit'),
-        operatingsystem_0:text (description = 'Name and version of the pre-installed OS'),
-        usbport_0:text (description = 'Details about available USB ports'),
-        hdmiport_0:text (description = 'Presence and version of the HDMI output'),
-        touchscreen:text (description = 'Indicates if the display is touch-sensitive'),
-        screensize_0:text (description = 'Diagonal size of the display in inches'),
-        screenresolution_0:text (description = 'Pixel dimensions of the display'),
-        screentype_0:text (description = 'Display panel technology, e.g., IPS, OLED, TN'),
-        speakers:text (description = 'Description of the built-in speaker system'),
-        internalmic_0:text (description = 'Presence and type of built-in microphone'),
-        soundproperties_0:text (description = 'Audio enhancement technologies like Dolby Atmos'),
-        wirelesslan_0:text (description = 'Wi-Fi standards supported'),
-        bluetooth:text (description = 'Bluetooth version supported'),
-        dimensions:text (description = 'Physical width, height, and depth of the device'),
-        weight:text (description = 'Total weight of the laptop'),
-        fingerprintsensor_0:text (description = 'Indicates if a fingerprint reader is present'),
-        keyboard:text (description = 'Keyboard layout and type description'),
-        backlitkeyboard_0:text (description = 'Indicates if the keyboard has internal lighting'),
-        additionalfeatures_0:text (description = 'Extra features or miscellaneous hardware details'),
-        warrantysummary_0:text (description = 'Brief overview of the warranty terms'),
-        warrantyservicetype_0:text (description = 'Method of warranty service, e.g., On-site, Carry-in'),
-        coveredinwarranty_0:text (description = 'Parts or issues covered by the warranty'),
-        notcoveredinwarranty_0:text (description = 'Exclusions from the warranty coverage'),
-        domesticwarranty_0:text (description = 'Duration of the warranty in the home country'),
-        webcamera_0:text (description = 'Specifications of the built-in camera'),
-        batterybackup_0:text (description = 'Estimated battery life under typical usage'),
-        chipset:text (description = 'Motherboard chipset model'),
-        memoryslots_0:text (description = 'Number of physical RAM slots available'),
-        ramfrequency_0:text (description = 'Operational speed of the RAM in MHz'),
-        rj45:text (description = 'Indicates presence of an Ethernet port'),
-        soundchip_0:text (description = 'Specific audio controller hardware'),
-        brightness:text (description = 'Maximum display brightness in nits'),
-        laptopbag_0:text (description = 'Indicates if a carrying bag is included'),
-        otheraccessories_0:text (description = 'Miscellaneous items included in the package'),
-        hardwareinterface_0:text (description = 'Available physical connection interfaces'),
-        facerecognition_0:text (description = 'Support for biometric facial login'),
-        systemarchitecture_0:text (description = 'Hardware architecture of the system'),
-        refreshrate_0:text (description = 'Display refresh rate in Hertz'),
-        antivirus:text (description = 'Pre-installed antivirus software details'),
-        multicardslot_0:text (description = 'Type of SD or memory card reader included'),
-        nfcsupport_0:text (description = 'Indicates if Near Field Communication is supported'),
-        hddcapacity_0:text (description = 'Storage capacity of the Hard Disk Drive'),
-        stylusincluded_0:text (description = 'Indicates if a digital pen is included'),
-        vgaport_0:text (description = 'Indicates presence of a VGA video output'),
-        securitychip_0:text (description = 'Presence of TPM or other hardware security modules')
+CREATE OR REPLACE TABLE laptopsdatasetbasicview I18N us_pst (
+        id_0:int (description = 'Unique identifier for the laptop record'),
+        brand:text (description = 'The manufacturer or brand name of the laptop'),
+        name:text (description = 'Full model name and commercial designation of the device'),
+        price:int (description = 'Current market price of the laptop'),
+        spec_rating:float (description = 'Overall performance score based on hardware specifications'),
+        processor:text (description = 'General classification of the CPU installed'),
+        cpu:text (description = 'Detailed technical model and architecture of the central processing unit'),
+        ram:text (description = 'Total amount of installed system memory (RAM)'),
+        ram_type:text (description = 'Technology type of the memory, such as DDR4, DDR5, or LPDDR'),
+        rom:text (description = 'Total internal storage capacity provided'),
+        rom_type:text (description = 'Type of storage technology, typically SSD or HDD'),
+        gpu:text (description = 'Graphics processing unit model and manufacturer details'),
+        display_size:float (description = 'Diagonal length of the screen measured in inches'),
+        resolution_width:int (description = 'Number of horizontal pixels on the display'),
+        resolution_height:int (description = 'Number of vertical pixels on the display'),
+        os:text (description = 'The operating system pre-installed on the laptop'),
+        warranty:int (description = 'Duration and terms of the manufacturer warranty coverage')
     )
     FOLDER = '/laptops'
-    DESCRIPTION = 'This dataset consists of laptop listings from Flipkart, a major e-commerce platform in India. It is an unprocessed, raw dataset created through web scraping during June. It captures a wide range of hardware specifications and market prices, making it suitable for data cleaning exercises, market trend analysis, and price prediction modeling within the Indian electronics sector.'
-    PRIMARY KEY ( 'id_0' , 'name' )
     CACHE OFF
     TIMETOLIVEINCACHE DEFAULT
-    ADD SEARCHMETHOD laptopsdataset(
+    ADD SEARCHMETHOD laptopsdatasetbasicview(
         I18N us_pst
         CONSTRAINTS (
              ADD id_0 NOS ZERO ()
+             ADD brand NOS ZERO ()
              ADD name NOS ZERO ()
-             ADD userrating_0 NOS ZERO ()
              ADD price NOS ZERO ()
-             ADD salespackage_0 NOS ZERO ()
-             ADD series NOS ZERO ()
-             ADD color NOS ZERO ()
-             ADD type NOS ZERO ()
-             ADD suitablefor_0 NOS ZERO ()
-             ADD powersupply_0 NOS ZERO ()
-             ADD batterycell_0 NOS ZERO ()
-             ADD msofficeprovided_0 NOS ZERO ()
-             ADD dedicatedgraphicmemorytype_0 NOS ZERO ()
-             ADD dedicatedgraphicmemorycapacity_0 NOS ZERO ()
-             ADD processorbrand_0 NOS ZERO ()
-             ADD processorname_0 NOS ZERO ()
-             ADD processorgeneration_0 NOS ZERO ()
-             ADD ssd NOS ZERO ()
-             ADD ssdcapacity_0 NOS ZERO ()
+             ADD spec_rating NOS ZERO ()
+             ADD processor NOS ZERO ()
+             ADD cpu NOS ZERO ()
              ADD ram NOS ZERO ()
-             ADD ramtype_0 NOS ZERO ()
-             ADD clockspeed_0 NOS ZERO ()
-             ADD expandablememory_0 NOS ZERO ()
-             ADD cache NOS ZERO ()
-             ADD graphicprocessor_0 NOS ZERO ()
-             ADD numberofcores_0 NOS ZERO ()
-             ADD osarchitecture_0 NOS ZERO ()
-             ADD operatingsystem_0 NOS ZERO ()
-             ADD usbport_0 NOS ZERO ()
-             ADD hdmiport_0 NOS ZERO ()
-             ADD touchscreen NOS ZERO ()
-             ADD screensize_0 NOS ZERO ()
-             ADD screenresolution_0 NOS ZERO ()
-             ADD screentype_0 NOS ZERO ()
-             ADD speakers NOS ZERO ()
-             ADD internalmic_0 NOS ZERO ()
-             ADD soundproperties_0 NOS ZERO ()
-             ADD wirelesslan_0 NOS ZERO ()
-             ADD bluetooth NOS ZERO ()
-             ADD dimensions NOS ZERO ()
-             ADD weight NOS ZERO ()
-             ADD fingerprintsensor_0 NOS ZERO ()
-             ADD keyboard NOS ZERO ()
-             ADD backlitkeyboard_0 NOS ZERO ()
-             ADD additionalfeatures_0 NOS ZERO ()
-             ADD warrantysummary_0 NOS ZERO ()
-             ADD warrantyservicetype_0 NOS ZERO ()
-             ADD coveredinwarranty_0 NOS ZERO ()
-             ADD notcoveredinwarranty_0 NOS ZERO ()
-             ADD domesticwarranty_0 NOS ZERO ()
-             ADD webcamera_0 NOS ZERO ()
-             ADD batterybackup_0 NOS ZERO ()
-             ADD chipset NOS ZERO ()
-             ADD memoryslots_0 NOS ZERO ()
-             ADD ramfrequency_0 NOS ZERO ()
-             ADD rj45 NOS ZERO ()
-             ADD soundchip_0 NOS ZERO ()
-             ADD brightness NOS ZERO ()
-             ADD laptopbag_0 NOS ZERO ()
-             ADD otheraccessories_0 NOS ZERO ()
-             ADD hardwareinterface_0 NOS ZERO ()
-             ADD facerecognition_0 NOS ZERO ()
-             ADD systemarchitecture_0 NOS ZERO ()
-             ADD refreshrate_0 NOS ZERO ()
-             ADD antivirus NOS ZERO ()
-             ADD multicardslot_0 NOS ZERO ()
-             ADD nfcsupport_0 NOS ZERO ()
-             ADD hddcapacity_0 NOS ZERO ()
-             ADD stylusincluded_0 NOS ZERO ()
-             ADD vgaport_0 NOS ZERO ()
-             ADD securitychip_0 NOS ZERO ()
+             ADD ram_type NOS ZERO ()
+             ADD rom NOS ZERO ()
+             ADD rom_type NOS ZERO ()
+             ADD gpu NOS ZERO ()
+             ADD display_size NOS ZERO ()
+             ADD resolution_width NOS ZERO ()
+             ADD resolution_height NOS ZERO ()
+             ADD os NOS ZERO ()
+             ADD warranty NOS ZERO ()
         )
-        OUTPUTLIST (additionalfeatures_0, antivirus, backlitkeyboard_0, batterybackup_0, batterycell_0, bluetooth, brightness, cache, chipset, clockspeed_0, color, coveredinwarranty_0, dedicatedgraphicmemorycapacity_0, dedicatedgraphicmemorytype_0, dimensions, domesticwarranty_0, expandablememory_0, facerecognition_0, fingerprintsensor_0, graphicprocessor_0, hardwareinterface_0, hddcapacity_0, hdmiport_0, id_0, internalmic_0, keyboard, laptopbag_0, memoryslots_0, msofficeprovided_0, multicardslot_0, name, nfcsupport_0, notcoveredinwarranty_0, numberofcores_0, operatingsystem_0, osarchitecture_0, otheraccessories_0, powersupply_0, price, processorbrand_0, processorgeneration_0, processorname_0, ram, ramfrequency_0, ramtype_0, refreshrate_0, rj45, salespackage_0, screenresolution_0, screensize_0, screentype_0, securitychip_0, series, soundchip_0, soundproperties_0, speakers, ssd, ssdcapacity_0, stylusincluded_0, suitablefor_0, systemarchitecture_0, touchscreen, type, usbport_0, userrating_0, vgaport_0, warrantyservicetype_0, warrantysummary_0, webcamera_0, weight, wirelesslan_0
+        OUTPUTLIST (brand, cpu, display_size, gpu, id_0, name, os, price, processor, ram, ram_type, resolution_height, resolution_width, rom, rom_type, spec_rating, warranty
         )
-        WRAPPER (df laptopsdataset)
+        WRAPPER (df laptopsdatasetbasicview)
     );
 
 CREATE OR REPLACE TABLE ratingsdatasetbaseview I18N us_pst (
-        userid_0:text (description = 'Unique identifier for the user providing the rating'),
+        userid_0:long (description = 'Unique identifier for the user providing the rating'),
         isbn_0:text (description = 'International Standard Book Number (ISBN) of the rated book'),
-        bookrating_0:text (description = 'Numeric score assigned to the book by the user')
+        bookrating_0:int (description = 'Numeric score assigned to the book by the user')
     )
     FOLDER = '/books'
     DESCRIPTION = 'Transactional fact table containing historical user-provided ratings for books. Includes User-ID, ISBN/Book-ID, and the numerical Rating score. This is the core dataset for collaborative filtering, recommendation engines, and sentiment analysis. It links user behavior to specific products.'
@@ -748,14 +612,14 @@ CREATE OR REPLACE TABLE ratingsdatasetbaseview I18N us_pst (
 
 CREATE OR REPLACE TABLE stocksdatasetbaseview I18N us_pst (
         index:text (description = 'Unique row index or record identifier'),
-        date:text (description = 'Trading date for the stock record'),
-        open:text (description = 'Opening price of the stock on the given date'),
-        high:text (description = 'Highest price reached by the stock during the session'),
-        low:text (description = 'Lowest price reached by the stock during the session'),
-        close:text (description = 'Closing price of the stock on the given date'),
-        adjclose_0:text (description = 'Adjusted closing price reflecting corporate actions like dividends'),
-        volume:text (description = 'Total number of shares traded during the period'),
-        closeusd:text (description = 'Closing price converted to US Dollars')
+        date:localdate (description = 'Trading date for the stock record'),
+        open:decimal (description = 'Opening price of the stock on the given date'),
+        high:decimal (description = 'Highest price reached by the stock during the session'),
+        low:decimal (description = 'Lowest price reached by the stock during the session'),
+        close:decimal (description = 'Closing price of the stock on the given date'),
+        adjclose_0:decimal (description = 'Adjusted closing price reflecting corporate actions like dividends'),
+        volume:long (description = 'Total number of shares traded during the period'),
+        closeusd:decimal (description = 'Closing price converted to US Dollars')
     )
     FOLDER = '/stocks'
     DESCRIPTION = 'Daily price data for indexes tracking stock exchanges from all over the world (United States, China, Canada, Germany, Japan, and more). The data was all collected from Yahoo Finance, which had several decades of data available for most exchanges. Prices are quoted in terms of the national currency of where each exchange is located.'
@@ -781,9 +645,9 @@ CREATE OR REPLACE TABLE stocksdatasetbaseview I18N us_pst (
     );
 
 CREATE OR REPLACE TABLE usersdatasetbaseview I18N us_pst (
-        userid_0:text (description = 'Unique identification number for the Amazon user'),
+        userid_0:long (description = 'Unique identification number for the Amazon user'),
         location_0:text (description = 'Geographic information including city, state, or country of the user'),
-        age_0:text (description = 'Recorded age of the user at the time of data collection')
+        age_0:int (description = 'Recorded age of the user at the time of data collection')
     )
     FOLDER = '/books'
     DESCRIPTION = 'Profile data for Amazon customers who have interacted with the book category. Includes unique User-ID and demographic attributes such as Location and Age. Use this view to segment rating behavior by geographic region or age groups. It serves as the user dimension for behavioral analysis.'
@@ -806,13 +670,13 @@ CREATE OR REPLACE TABLE usersdatasetbaseview I18N us_pst (
 # VIEWS
 # #######################################
 CREATE OR REPLACE VIEW booksdatasetbaseview2_j_booksdatasetbaseview FOLDER = '/books' DESCRIPTION = 'Unified Master Book Catalog created by joining two primary book data sources. This view synchronizes records using a Title-based join condition (booktitle_0 = title) to consolidate all available metadata fields into a single record. Use this view to access a comprehensive set of book attributes from both datasets simultaneously, ensuring no fields are missing during analysis.' 
-    PRIMARY KEY ( 'isbn' , 'booktitle_0' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview2.booktitle_0 AS booktitle_0, booksdatasetbaseview2.bookauthor_0 AS bookauthor_0, booksdatasetbaseview2.yearofpublication_0 AS yearofpublication_0, booksdatasetbaseview2.publisher AS publisher2, booksdatasetbaseview.title AS title, booksdatasetbaseview.authors AS authors, booksdatasetbaseview.description AS description, booksdatasetbaseview.category AS category, booksdatasetbaseview.publisher AS publisher, booksdatasetbaseview.pricestartingwith_0 AS pricestartingwith_0, booksdatasetbaseview.publishdatemonth_0 AS publishdatemonth_0, booksdatasetbaseview.publishdateyear_0 AS publishdateyear_0 FROM booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN booksdatasetbaseview AS booksdatasetbaseview ON booksdatasetbaseview2.booktitle_0 = booksdatasetbaseview.title ;
+    PRIMARY KEY ( 'isbn' , 'title' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview.title AS title, booksdatasetbaseview.authors AS authors, booksdatasetbaseview.description AS description, booksdatasetbaseview.category AS category, booksdatasetbaseview.publisher AS publisher, booksdatasetbaseview.pricestartingwith_0 AS pricestartingwith_0, booksdatasetbaseview.publishdatemonth_0 AS publishdatemonth_0, booksdatasetbaseview.publishdateyear_0 AS publishdateyear_0 FROM booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN booksdatasetbaseview AS booksdatasetbaseview ON booksdatasetbaseview2.booktitle_0 = booksdatasetbaseview.title ;
 
 ALTER VIEW booksdatasetbaseview2_j_booksdatasetbaseview
  LAYOUT (booksdatasetbaseview2 = [382, 1, 200, 200], booksdatasetbaseview = [721, 9, 200, 200]);
 
 CREATE OR REPLACE VIEW booksdatasetbaseview2_j_ratingsdatasetbaseview_j_usersdatasetbaseview FOLDER = '/books' DESCRIPTION = 'Comprehensive Amazon Book Analytics dataset providing a 360-degree view of the recommendation ecosystem. This view performs a multi-way join between Books, Ratings, and User Profiles, synchronizing ISBN and User-ID identifiers. It enables direct correlation between user demographics—specifically age and geographic location—and book metadata like author, publisher, and year of publication. Use this integrated view for training recommendation engines, performing demographic-based sentiment analysis, and identifying cross-functional popularity trends across different market segments.' 
-    PRIMARY KEY ( 'isbn' , 'booktitle_0' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview2.booktitle_0 AS booktitle_0, booksdatasetbaseview2.bookauthor_0 AS bookauthor_0, booksdatasetbaseview2.yearofpublication_0 AS yearofpublication_0, booksdatasetbaseview2.publisher AS publisher, ratingsdatasetbaseview.userid_0 AS userid_0, ratingsdatasetbaseview.isbn_0 AS isbn_0, ratingsdatasetbaseview.bookrating_0 AS bookrating_0, usersdatasetbaseview.location_0 AS location_0, usersdatasetbaseview.age_0 AS age_0 FROM (booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN ratingsdatasetbaseview AS ratingsdatasetbaseview ON booksdatasetbaseview2.isbn = ratingsdatasetbaseview.isbn_0 ) INNER JOIN usersdatasetbaseview AS usersdatasetbaseview ON ratingsdatasetbaseview.userid_0 = usersdatasetbaseview.userid_0 ;
+    PRIMARY KEY ( 'isbn' , 'booktitle_0' ) AS SELECT booksdatasetbaseview2.isbn AS isbn, booksdatasetbaseview2.booktitle_0 AS booktitle_0, booksdatasetbaseview2.bookauthor_0 AS bookauthor_0, booksdatasetbaseview2.yearofpublication_0 AS yearofpublication_0, booksdatasetbaseview2.publisher AS publisher, ratingsdatasetbaseview.userid_0 AS userid_0, ratingsdatasetbaseview.bookrating_0 AS bookrating_0, usersdatasetbaseview.location_0 AS location_0, usersdatasetbaseview.age_0 AS age_0 FROM (booksdatasetbaseview2 AS booksdatasetbaseview2 INNER JOIN ratingsdatasetbaseview AS ratingsdatasetbaseview ON booksdatasetbaseview2.isbn = ratingsdatasetbaseview.isbn_0 ) INNER JOIN usersdatasetbaseview AS usersdatasetbaseview ON ratingsdatasetbaseview.userid_0 = usersdatasetbaseview.userid_0 ;
 
 ALTER VIEW booksdatasetbaseview2_j_ratingsdatasetbaseview_j_usersdatasetbaseview
  LAYOUT (booksdatasetbaseview2 = [83, 58, 200, 200], ratingsdatasetbaseview = [522, 33, 200, 200], usersdatasetbaseview = [859, 124, 200, 200]);
