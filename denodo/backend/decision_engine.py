@@ -5,31 +5,65 @@ from typing import Dict, Any
 
 class GenericDecisionEngine:
 
+    # Default query parameters shared by both endpoints
+    DEFAULT_PARAMS = {
+        "plot": False,
+        "embeddings_provider": "googleaistudio",
+        "embeddings_model": "gemini-embedding-001",
+        "vector_store_provider": "chroma",
+        "llm_provider": "googleaistudio",
+        "llm_model": "gemma-3-27b-it",
+        "llm_temperature": 0,
+        "llm_max_tokens": 4096,
+        "allow_external_associations": False,
+        "expand_set_views": True,
+        "markdown_response": True,
+        "vector_search_k": 5,
+        "vector_search_sample_data_k": 3,
+        "vector_search_total_limit": 20,
+        "vector_search_column_description_char_limit": 200,
+        "disclaimer": True,
+        "verbose": True,
+    }
+
+    # Extra parameters only for answerDataQuestion
+    DATA_QUESTION_EXTRA_PARAMS = {
+        "check_ambiguity": True,
+        "vql_execute_rows_limit": 100,
+        "llm_response_rows_limit": 15,
+    }
+
     def __init__(
         self,
         base_url: str = "http://localhost:8008",
+        auth_user: str = "admin",
+        auth_pass: str = "admin",
         timeout: int = 60,
         max_retries: int = 3,
         backoff_factor: float = 1.5,
     ):
         self.base_url = base_url
+        self.auth = (auth_user, auth_pass)
         self.timeout = timeout
         self.max_retries = max_retries
         self.backoff_factor = backoff_factor
+        self.headers = {"accept": "application/json"}
 
     # -----------------------------
-    # INTERNAL SAFE REQUEST
+    # INTERNAL SAFE REQUEST (GET)
     # -----------------------------
-    def _post_with_retry(self, endpoint: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_with_retry(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
 
         attempt = 0
         delay = 1
 
         while attempt < self.max_retries:
             try:
-                response = requests.post(
+                response = requests.get(
                     f"{self.base_url}/{endpoint}",
-                    json=payload,
+                    params=params,
+                    headers=self.headers,
+                    auth=self.auth,
                     timeout=self.timeout,
                 )
 
@@ -61,24 +95,9 @@ class GenericDecisionEngine:
     # -----------------------------
     def _discover_relevant_schema(self, user_question: str) -> Dict[str, Any]:
 
-        metadata_prompt = f"""
-        The user question is:
+        params = {**self.DEFAULT_PARAMS, "question": user_question}
 
-        "{user_question}"
-
-        Identify:
-        - Relevant views
-        - Relevant columns
-        - Required relationships
-
-        Do NOT execute data queries.
-        Only analyze metadata.
-        """
-
-        return self._post_with_retry(
-            "answerMetadataQuestion",
-            {"question": metadata_prompt},
-        )
+        return self._get_with_retry("answerMetadataQuestion", params)
 
     # -----------------------------
     # PHASE 2 — DATA EXECUTION
@@ -89,24 +108,19 @@ class GenericDecisionEngine:
         discovered_schema: str,
     ) -> Dict[str, Any]:
 
-        execution_prompt = f"""
-        The user question is:
-
-        "{user_question}"
-
-        Use ONLY the following discovered schema:
-
-        {discovered_schema}
-
-        Construct and execute the necessary analytical reasoning.
-        Do NOT invent new tables or columns.
-        Provide a structured decision-oriented answer.
-        """
-
-        return self._post_with_retry(
-            "answerDataQuestion",
-            {"question": execution_prompt},
+        execution_prompt = (
+            f"{user_question}\n\n"
+            f"Use ONLY the following discovered schema:\n{discovered_schema}\n"
+            f"Do NOT invent new tables or columns."
         )
+
+        params = {
+            **self.DEFAULT_PARAMS,
+            **self.DATA_QUESTION_EXTRA_PARAMS,
+            "question": execution_prompt,
+        }
+
+        return self._get_with_retry("answerDataQuestion", params)
 
     # -----------------------------
     # PUBLIC ENTRY POINT
