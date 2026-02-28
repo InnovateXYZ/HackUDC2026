@@ -62,16 +62,16 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center w-full px-4">
-      <form onSubmit={handleSubmit} className="bg-[#242424] p-8 rounded-lg shadow-lg w-full max-w-2xl text-white">
-        <h2 className="text-2xl font-semibold mb-3">Create your account</h2>
+    <div className="min-h-screen flex items-center justify-center w-full px-4" style={{ backgroundColor: 'var(--color-base)' }}>
+      <form onSubmit={handleSubmit} className="p-8 rounded-lg shadow-lg w-full max-w-2xl" style={{ backgroundColor: 'var(--color-surface-dark0)', color: 'var(--color-text)' }}>
+        <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-text)' }}>Create your account</h2>
 
-        {error && <p className="text-[#ffb347] text-sm mb-3">{error}</p>}
+        {error && <p className="text-orange-400 text-sm mb-3">{error}</p>}
 
         {/* Grid: 2 columns on md+, single column on small screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2 text-left">
-            <label htmlFor="register-username" className="text-sm">Username</label>
+            <label htmlFor="register-username" className="text-sm" style={{ color: 'var(--color-text)' }}>Username</label>
             <input
               id="register-username"
               type="text"
@@ -79,12 +79,12 @@ function Register() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="username"
               required
-              className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+              className="input-base"
             />
           </div>
 
           <div className="flex flex-col gap-2 text-left">
-            <label htmlFor="register-email" className="text-sm">Email</label>
+            <label htmlFor="register-email" className="text-sm" style={{ color: 'var(--color-text)' }}>Email</label>
             <input
               id="register-email"
               type="email"
@@ -92,42 +92,42 @@ function Register() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@mail.com"
               required
-              className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+              className="input-base"
             />
           </div>
 
           {/* Optional profile details tucked inside a collapsible block that spans both columns */}
-          <details className="md:col-span-2 bg-[#1f1f1f] p-3 rounded-md" open={false}>
-            <summary className="cursor-pointer font-medium text-sm text-white">Profile (optional)</summary>
-            <p className="text-xs text-[#bdbdbd] mt-2 mb-3">Add extra info to personalize your experience.</p>
+          <details className="md:col-span-2 p-3 rounded-md" open={false} style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
+            <summary className="cursor-pointer font-medium text-sm" style={{ color: 'var(--color-text-alt)' }}>Profile (optional)</summary>
+            <p className="text-xs mt-2 mb-3 opacity-70" style={{ color: 'var(--color-text-alt)' }}>Add extra info to personalize your experience.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2 text-left">
-                <label htmlFor="register-name" className="text-sm">Full name</label>
+                <label htmlFor="register-name" className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Full name</label>
                 <input
                   id="register-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Doe"
-                  className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+                  className="input-base"
                 />
               </div>
 
               <div className="flex flex-col gap-2 text-left">
-                <label htmlFor="register-gender" className="text-sm">Gender identity</label>
+                <label htmlFor="register-gender" className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Gender identity</label>
                 <input
                   id="register-gender"
                   type="text"
                   value={genderIdentity}
                   onChange={(e) => setGenderIdentity(e.target.value)}
                   placeholder="e.g. she/her"
-                  className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+                  className="input-base"
                 />
               </div>
 
               <div className="flex flex-col gap-2 text-left">
-                <label htmlFor="register-age" className="text-sm">Age</label>
+                <label htmlFor="register-age" className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Age</label>
                 <input
                   id="register-age"
                   type="number"
@@ -135,26 +135,26 @@ function Register() {
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
                   placeholder="e.g. 30"
-                  className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+                  className="input-base"
                 />
               </div>
 
               <div className="flex flex-col gap-2 text-left">
-                <label htmlFor="register-prefs" className="text-sm">Preferences</label>
+                <label htmlFor="register-prefs" className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Preferences</label>
                 <input
                   id="register-prefs"
                   type="text"
                   value={userPreferences}
                   onChange={(e) => setUserPreferences(e.target.value)}
                   placeholder='e.g. "I like short answers..."'
-                  className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+                  className="input-base"
                 />
               </div>
             </div>
           </details>
 
           <div className="flex flex-col gap-2 text-left md:col-span-2">
-            <label htmlFor="register-password" className="text-sm">Password</label>
+            <label htmlFor="register-password" className="text-sm" style={{ color: 'var(--color-text)' }}>Password</label>
             <input
               id="register-password"
               type="password"
@@ -162,12 +162,12 @@ function Register() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
               required
-              className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+              className="input-base"
             />
           </div>
 
           <div className="flex flex-col gap-2 text-left md:col-span-2">
-            <label htmlFor="register-confirm" className="text-sm">Confirm password</label>
+            <label htmlFor="register-confirm" className="text-sm" style={{ color: 'var(--color-text)' }}>Confirm password</label>
             <input
               id="register-confirm"
               type="password"
@@ -175,7 +175,7 @@ function Register() {
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="********"
               required
-              className="w-full px-3 py-2 rounded border border-[#646cff] bg-[#1a1a1a] text-white outline-none focus:border-[#f47721]"
+              className="input-base"
             />
           </div>
 
@@ -184,19 +184,19 @@ function Register() {
               {loading ? 'Creating…' : 'Create account'}
             </button>
 
-            <div className="hidden md:block bg-[#2a2a2a] p-2 rounded text-sm">
-              <p className="text-white">Already have an account?</p>
-              <button type="button" className="text-[#f47721] underline text-sm" onClick={() => navigate('/login')}>
+            <div className="hidden md:block p-2 rounded text-sm" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
+              <p style={{ color: 'var(--color-text-alt)' }}>Already have an account?</p>
+              <button type="button" className="underline text-sm" style={{ color: 'var(--color-accent)' }} onClick={() => navigate('/login')}>
                 Log in
               </button>
             </div>
           </div>
 
           {/* Small footer for small screens */}
-          <div className="md:col-span-2 block md:hidden bg-[#2a2a2a] p-2 rounded mt-2 text-center">
-            <p className="text-sm text-white">
+          <div className="md:col-span-2 block md:hidden p-2 rounded mt-2 text-center" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
               Already have an account?{' '}
-              <button type="button" className="text-[#f47721] underline" onClick={() => navigate('/login')}>
+              <button type="button" className="underline" style={{ color: 'var(--color-accent)' }} onClick={() => navigate('/login')}>
                 Click here
               </button>
             </p>
