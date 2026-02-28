@@ -1,6 +1,10 @@
+import logging
+import threading
 import requests
 import time
 from typing import Dict, Any
+
+logger = logging.getLogger(__name__)
 
 
 class GenericDecisionEngine:
@@ -96,6 +100,101 @@ class GenericDecisionEngine:
                 raise RuntimeError(f"Unexpected error during request: {str(e)}")
 
         raise RuntimeError("Max retries exceeded")
+
+    # ----------------------------------------
+    # STARTUP: LOAD METADATA (with retry loop)
+    # ----------------------------------------
+    METADATA_PARAMS = {
+        "vdp_database_names": "hackudc",
+        "embeddings_provider": "googleaistudio",
+        "embeddings_model": "gemini-embedding-001",
+        "embeddings_token_limit": 0,
+        "vector_store_provider": "chroma",
+        "rate_limit_rpm": 0,
+        "examples_per_table": 100,
+        "view_descriptions": True,
+        "column_descriptions": True,
+        "associations": True,
+        "insert": True,
+        "views_per_request": 50,
+        "incremental": True,
+        "parallel": True,
+    }
+
+    def load_metadata(self) -> None:
+        """Call /getMetadata at startup. Retries every 5 seconds on failure."""
+        logger.info("[Decision Engine] Starting metadata load from AI SDK …")
+        while True:
+            try:
+                logger.info(
+                    "[Decision Engine] GET %s/getMetadata  (params: %s)",
+                    self.base_url,
+                    self.METADATA_PARAMS,
+                )
+                response = requests.get(
+                    f"{self.base_url}/getMetadata",
+                    params=self.METADATA_PARAMS,
+                    headers=self.headers,
+                    auth=self.auth,
+                    timeout=300,          # metadata load can be slow
+                )
+                logger.info(
+                    "[Decision Engine] Response status: %s, content-type: %s, "
+                    "body length: %d",
+                    response.status_code,
+                    response.headers.get("content-type", "unknown"),
+                    len(response.content),
+                )
+                response.raise_for_status()
+
+                # 204 = metadata already up-to-date (incremental, nothing new)
+                if response.status_code == 204:
+                    logger.info(
+                        "[Decision Engine] Metadata already up-to-date "
+                        "(204 No Content). Done."
+                    )
+                    return
+
+                # Non-empty JSON response with new metadata
+                body = response.text.strip()
+                if not body:
+                    logger.warning(
+                        "[Decision Engine] Empty response body. "
+                        "Retrying in 5 s …"
+                    )
+                    time.sleep(5)
+                    continue
+
+                data = response.json()
+                logger.info(
+                    "[Decision Engine] Metadata loaded successfully! "
+                    "Response keys: %s",
+                    list(data.keys()) if isinstance(data, dict) else type(data).__name__,
+                )
+                return
+            except requests.exceptions.ConnectionError:
+                logger.warning(
+                    "[Decision Engine] AI SDK not reachable. Retrying in 5 s …"
+                )
+            except requests.exceptions.Timeout:
+                logger.warning(
+                    "[Decision Engine] Request timed out. Retrying in 5 s …"
+                )
+            except requests.exceptions.HTTPError as exc:
+                logger.error(
+                    "[Decision Engine] HTTP error: %s. Retrying in 5 s …", exc
+                )
+            except Exception as exc:
+                logger.error(
+                    "[Decision Engine] Unexpected error: %s. Retrying in 5 s …", exc
+                )
+            time.sleep(5)
+
+    def load_metadata_background(self) -> None:
+        """Launch load_metadata in a daemon thread so it doesn't block the server."""
+        thread = threading.Thread(target=self.load_metadata, daemon=True)
+        thread.start()
+        logger.info("[Decision Engine] Metadata load thread started.")
 
     # -----------------------------
     # PHASE 1 — METADATA DISCOVERY

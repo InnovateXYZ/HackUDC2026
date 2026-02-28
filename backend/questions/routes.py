@@ -15,7 +15,7 @@ from .schemas import (
     MetadataResponse,
 )
 from .crud import create_question, get_questions_by_user
-from denodo.backend.decision_engine import GenericDecisionEngine
+from ..decision_engine import GenericDecisionEngine
 
 router = APIRouter(prefix="/questions")
 
