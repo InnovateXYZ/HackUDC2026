@@ -100,9 +100,22 @@ class GenericDecisionEngine:
     # -----------------------------
     # PHASE 1 — METADATA DISCOVERY
     # -----------------------------
-    def _discover_relevant_schema(self, user_question: str) -> Dict[str, Any]:
+    def _discover_relevant_schema(
+        self, user_question: str, datasets: list[str] | None = None
+    ) -> Dict[str, Any]:
 
-        params = {**self.DEFAULT_PARAMS, "question": user_question}
+        # If datasets are specified, enrich the question so the AI SDK
+        # focuses only on the selected tables / data sources.
+        scoped_question = user_question
+        if datasets:
+            dataset_list = ", ".join(datasets)
+            scoped_question = (
+                f"{user_question}\n\n"
+                f"Important: Only consider the following datasets/tables: {dataset_list}. "
+                f"Do not include metadata from any other sources."
+            )
+
+        params = {**self.DEFAULT_PARAMS, "question": scoped_question}
 
         return self._get_with_retry("answerMetadataQuestion", params)
 
@@ -165,10 +178,15 @@ class GenericDecisionEngine:
     # -----------------------------
     # PUBLIC: METADATA DISCOVERY
     # -----------------------------
-    def get_metadata(self, user_question: str) -> Dict[str, Any]:
-        """Phase 1 only — discover relevant tables/columns for the question."""
+    def get_metadata(
+        self, user_question: str, datasets: list[str] | None = None
+    ) -> Dict[str, Any]:
+        """Phase 1 only — discover relevant tables/columns for the question.
+        If datasets is provided, scope the discovery to those tables only."""
         try:
-            metadata_response = self._discover_relevant_schema(user_question)
+            metadata_response = self._discover_relevant_schema(
+                user_question, datasets=datasets
+            )
             discovered_schema = metadata_response.get("answer", "")
 
             if not discovered_schema:

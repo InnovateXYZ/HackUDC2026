@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
+import AVAILABLE_DATASETS from 'virtual:available-datasets';
 
-const STEP_LABELS = ['Question', 'Data & Filters'];
+const STEP_LABELS = ['Question & Datasets', 'Data & Filters'];
 
 const LLM_MODELS = [
     { value: 'gemma-3-27b-it', label: 'Gemma 3.0 27B (Default)' },
@@ -10,9 +11,25 @@ const LLM_MODELS = [
 
 function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata, executionResult }) {
     const [currentStep, setCurrentStep] = useState(0);
+    const [selectedDatasets, setSelectedDatasets] = useState([]);
+    const [datasetsOpen, setDatasetsOpen] = useState(false);
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
     const [llmModel, setLlmModel] = useState('gemma-3-27b-it');
+
+    const toggleDataset = (value) => {
+        setSelectedDatasets((prev) =>
+            prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value]
+        );
+    };
+
+    const toggleAllDatasets = () => {
+        if (selectedDatasets.length === AVAILABLE_DATASETS.length) {
+            setSelectedDatasets([]);
+        } else {
+            setSelectedDatasets(AVAILABLE_DATASETS.map((d) => d.value));
+        }
+    };
 
     // voice recognition state
     const [listening, setListening] = useState(false);
@@ -46,14 +63,14 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
     };
 
     const canNext = () => {
-        if (currentStep === 0) return question.trim() !== '';
+        if (currentStep === 0) return selectedDatasets.length > 0 && question.trim() !== '';
         return false;
     };
 
     const handleNext = () => {
         if (currentStep === 0 && canNext()) {
-            // Trigger metadata fetch when moving from Question to Data & Filters
-            onFetchMetadata(question);
+            // Trigger metadata fetch when moving from Question & Datasets to Data & Filters
+            onFetchMetadata(question, selectedDatasets);
             setCurrentStep(1);
         }
     };
@@ -68,6 +85,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
             restrictions,
             metadata,
             llmModel,
+            selectedDatasets,
         });
     };
 
@@ -117,19 +135,19 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
 
             {/* Step content */}
             <div className="bg-[#1e1e1e] rounded-xl p-6 border border-[#333] min-h-[500px] flex flex-col">
-                {/* Step 0: Analytical Question */}
+                {/* Step 0: Question & Datasets */}
                 {currentStep === 0 && (
                     <div className="flex-1 flex flex-col gap-4">
                         <h3 className="text-lg font-semibold text-white">Analytical Question</h3>
                         <p className="text-sm text-gray-400">
-                            Describe what you want to analyze. Be as specific as possible about the insights you're looking for.
+                            Describe what you want to analyze and select the datasets to scope your analysis.
                         </p>
                         <div className="flex-1 flex flex-col relative">
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 placeholder="e.g. Which countries won the most gold medals in swimming events? Show me a breakdown by year and compare the top 5 nations."
-                                rows={6}
+                                rows={5}
                                 className="w-full flex-1 px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
                             />
 
@@ -146,6 +164,107 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             >
                                 🎤
                             </button>
+                        </div>
+
+                        {/* Dataset selection */}
+                        <div className="border-t border-[#333] pt-4">
+                            <h4 className="text-sm font-semibold text-white mb-2">Select Datasets</h4>
+
+                            {/* Dropdown trigger */}
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setDatasetsOpen((o) => !o)}
+                                    className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white text-sm hover:border-[#f47721] transition-colors"
+                                >
+                                    <span className={selectedDatasets.length === 0 ? 'text-gray-500' : 'text-white'}>
+                                        {selectedDatasets.length === 0
+                                            ? 'Select datasets...'
+                                            : `${selectedDatasets.length} dataset${selectedDatasets.length > 1 ? 's' : ''} selected`}
+                                    </span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className={`h-4 w-4 text-gray-400 transition-transform ${datasetsOpen ? 'rotate-180' : ''}`}
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Dropdown panel */}
+                                {datasetsOpen && (
+                                    <div className="absolute z-20 mt-1 w-full rounded-lg border border-[#444] bg-[#2a2a2a] shadow-xl overflow-hidden">
+                                        {/* Select / Deselect all */}
+                                        <button
+                                            type="button"
+                                            onClick={toggleAllDatasets}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#f47721] hover:bg-[#333] border-b border-[#444] transition-colors"
+                                        >
+                                            <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${selectedDatasets.length === AVAILABLE_DATASETS.length ? 'bg-[#f47721] border-[#f47721]' : 'border-[#666]'}`}>
+                                                {selectedDatasets.length === AVAILABLE_DATASETS.length && (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </span>
+                                            {selectedDatasets.length === AVAILABLE_DATASETS.length ? 'Deselect All' : 'Select All'}
+                                        </button>
+
+                                        {/* Dataset items */}
+                                        {AVAILABLE_DATASETS.map((ds) => {
+                                            const checked = selectedDatasets.includes(ds.value);
+                                            return (
+                                                <button
+                                                    key={ds.value}
+                                                    type="button"
+                                                    onClick={() => toggleDataset(ds.value)}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-[#333] transition-colors"
+                                                >
+                                                    <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? 'bg-[#f47721] border-[#f47721]' : 'border-[#666]'}`}>
+                                                        {checked && (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#f47721]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                                        </svg>
+                                                        {ds.label}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Selected datasets chips */}
+                            {selectedDatasets.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {selectedDatasets.map((dsValue) => {
+                                        const ds = AVAILABLE_DATASETS.find((d) => d.value === dsValue);
+                                        return (
+                                            <span
+                                                key={dsValue}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#f47721]/15 text-[#f47721] border border-[#f47721]/30"
+                                            >
+                                                {ds?.label || dsValue}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleDataset(dsValue)}
+                                                    className="hover:text-white transition-colors"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

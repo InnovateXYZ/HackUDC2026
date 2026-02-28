@@ -58,7 +58,7 @@ def get_metadata(
     """Discover relevant tables and columns for the given question (Phase 1).
     Returns the schema metadata so the frontend can display it before executing."""
     try:
-        result = engine.get_metadata(request.question)
+        result = engine.get_metadata(request.question, datasets=request.datasets)
 
         if result.get("status") == "error":
             return MetadataResponse(

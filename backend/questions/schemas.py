@@ -19,6 +19,7 @@ class QuestionRead(BaseModel):
 
 class MetadataRequest(BaseModel):
     question: str
+    datasets: List[str] = []
 
 
 class MetadataResponse(BaseModel):
