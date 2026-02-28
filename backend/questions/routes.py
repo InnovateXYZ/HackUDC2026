@@ -102,7 +102,11 @@ def decide(
                 error=result.get("message", "Unknown error from decision engine"),
             )
 
-        answer_text = result.get("execution_phase", {}).get("answer", "")
+        # Use the formatted analytical report (Phase 3).
+        # Fall back to raw execution answer if report is empty for any reason.
+        answer_text = result.get("report", "") or result.get("execution_phase", {}).get(
+            "answer", ""
+        )
 
         # Persist the question + answer so it appears in the user's history
         question_in = QuestionCreate(title=request.question, answer=answer_text)

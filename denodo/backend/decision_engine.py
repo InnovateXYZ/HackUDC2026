@@ -119,61 +119,106 @@ class GenericDecisionEngine:
 
         return self._get_with_retry("answerMetadataQuestion", params)
 
-    # -----------------------------
-    # PHASE 2 — DATA EXECUTION
-    # -----------------------------
-    def _execute_reasoning(
+    # ----------------------------------------
+    # PHASE 2 — DATA RETRIEVAL (raw query)
+    # ----------------------------------------
+    def _fetch_raw_data(
         self,
         user_question: str,
-        discovered_schema: str,
     ) -> Dict[str, Any]:
-
-        execution_prompt = (
-            f"You are a senior data analyst generating a professional analytical report.\n\n"
-            f'USER QUESTION:\n"{user_question}"\n\n'
-            f"AVAILABLE SCHEMA:\n"
-            f"{discovered_schema}\n\n"
-            f"INSTRUCTIONS — produce a detailed, well-structured Markdown report with the "
-            f"following sections. Omit a section ONLY if it is genuinely irrelevant to the "
-            f"question. Use the language of the user question (e.g. if the question is in "
-            f"Spanish, write the full report in Spanish).\n\n"
-            f"## 📋 Executive Summary\n"
-            f"A concise paragraph (3-5 sentences) giving the key takeaway that directly "
-            f"answers the user's question.\n\n"
-            f"## 🔍 Methodology\n"
-            f"Briefly explain: which tables / views were queried, any filters or joins "
-            f"applied, aggregation logic, and the rationale behind the approach.\n\n"
-            f"## 📊 Key Findings\n"
-            f"Present the main results as a numbered list. Include specific numbers, "
-            f"percentages, rankings, or comparisons. If the data supports it, highlight "
-            f"top-N rankings, trends, maximums, minimums, or outliers.\n\n"
-            f"## 📈 Data Detail\n"
-            f"Show supporting data in well-formatted Markdown tables. Add column headers "
-            f"and align numbers to the right. Limit to the most relevant rows (max ~15) "
-            f"and indicate if more data exists.\n\n"
-            f"## 💡 Insights & Interpretation\n"
-            f"Provide analytical commentary: patterns, correlations, anomalies, or "
-            f"contextual explanations that add value beyond raw numbers.\n\n"
-            f"## ✅ Recommendations\n"
-            f"Based on the data, suggest actionable next steps, areas for deeper analysis, "
-            f"or decisions the user could take.\n\n"
-            f"## ⚠️ Caveats & Limitations\n"
-            f"Note any data quality issues, missing values, scope limitations, or "
-            f"assumptions made during the analysis.\n\n"
-            f"FORMATTING RULES:\n"
-            f"- Use Markdown headings (##), bold, bullet points, and tables.\n"
-            f"- Keep the tone professional and objective.\n"
-            f"- Prioritize clarity and readability.\n"
-            f"- Every claim must be backed by the queried data.\n"
-        )
+        """Send the user's question *as-is* to answerDataQuestion so the
+        AI SDK focuses exclusively on generating the correct VQL, executing
+        it and returning the raw data.  No formatting instructions are
+        injected here — that keeps the VQL generation clean."""
 
         params = {
             **self.DEFAULT_PARAMS,
             **self.DATA_QUESTION_EXTRA_PARAMS,
-            "question": execution_prompt,
+            "question": user_question,
         }
 
         return self._get_with_retry("answerDataQuestion", params)
+
+    # ----------------------------------------
+    # PHASE 3 — ANALYTICAL REPORT GENERATION
+    # ----------------------------------------
+
+    REPORT_TEMPLATE = (
+        "You are a senior data analyst. Using ONLY the data provided below, "
+        "generate a professional analytical report in **Markdown**.\n\n"
+        'USER QUESTION:\n"{user_question}"\n\n'
+        "RAW DATA / ANSWER FROM THE DATABASE:\n"
+        "```\n{raw_data}\n```\n\n"
+        "VQL QUERY USED (for methodology reference):\n"
+        "```sql\n{vql}\n```\n\n"
+        "INSTRUCTIONS — You MUST produce ALL of the following sections. "
+        "Do NOT skip any section. If a section has limited relevance, still "
+        "include it with a brief note. Write the ENTIRE report in the SAME "
+        "language as the user question (e.g. if it is in Spanish, write "
+        "everything in Spanish).\n\n"
+        "## 📋 Executive Summary\n"
+        "A concise paragraph (3-5 sentences) giving the key takeaway that "
+        "directly answers the user's question.\n\n"
+        "## 🔍 Methodology\n"
+        "Briefly explain: which tables / views were queried, any filters or "
+        "joins applied, aggregation logic, and the rationale behind the "
+        "approach. Reference the VQL query above.\n\n"
+        "## 📊 Key Findings\n"
+        "Present the main results as a numbered list. Include specific "
+        "numbers, percentages, rankings, or comparisons. Highlight top-N "
+        "rankings, trends, maximums, minimums, or outliers.\n\n"
+        "## 📈 Data Detail\n"
+        "Show supporting data in well-formatted Markdown tables. Add column "
+        "headers and align numbers to the right. Limit to the most relevant "
+        "rows (max ~15) and indicate if more data exists.\n\n"
+        "## 💡 Insights & Interpretation\n"
+        "Provide analytical commentary: patterns, correlations, anomalies, "
+        "or contextual explanations that add value beyond raw numbers.\n\n"
+        "## ✅ Recommendations\n"
+        "Based on the data, suggest actionable next steps, areas for deeper "
+        "analysis, or decisions the user could take.\n\n"
+        "## 🎯 Decision\n"
+        "If the data supports a clear, actionable decision (e.g. choosing "
+        "between options, investing/not investing, prioritising one item over "
+        "another, accepting/rejecting a hypothesis), state it explicitly here "
+        "as a direct recommendation worded as a decision statement. "
+        "Justify it briefly with the most relevant data points. "
+        "If the question is purely informational and no decision applies, "
+        "write: *No specific decision is required — this report is "
+        "informational.*\n\n"
+        "## ⚠️ Caveats & Limitations\n"
+        "Note any data quality issues, missing values, scope limitations, "
+        "or assumptions made during the analysis.\n\n"
+        "FORMATTING RULES:\n"
+        "- Use Markdown headings (##), bold, bullet points, and tables.\n"
+        "- Keep the tone professional and objective.\n"
+        "- Prioritize clarity and readability.\n"
+        "- Every claim MUST be backed by the provided data.\n"
+        "- Do NOT invent data that is not present above.\n"
+    )
+
+    def _generate_report(
+        self,
+        user_question: str,
+        raw_data_response: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Take the raw data returned by answerDataQuestion and ask the LLM
+        (via answerMetadataQuestion, which does NOT execute VQL) to format
+        it as a structured analytical report.  Because no VQL generation is
+        involved in this call, the LLM can focus 100 % on formatting."""
+
+        raw_answer = raw_data_response.get("answer", str(raw_data_response))
+        vql = raw_data_response.get("vql", "N/A")
+
+        report_prompt = self.REPORT_TEMPLATE.format(
+            user_question=user_question,
+            raw_data=raw_answer,
+            vql=vql,
+        )
+
+        params = {**self.DEFAULT_PARAMS, "question": report_prompt}
+
+        return self._get_with_retry("answerMetadataQuestion", params)
 
     # -----------------------------
     # PUBLIC: METADATA DISCOVERY
@@ -241,15 +286,17 @@ class GenericDecisionEngine:
             else:
                 metadata_response = {"answer": discovered_schema}
 
-            data_response = self._execute_reasoning(
-                user_question,
-                discovered_schema,
-            )
+            # Phase 2 — retrieve raw data (clean question, no formatting noise)
+            raw_data_response = self._fetch_raw_data(user_question)
+
+            # Phase 3 — format the raw data into the analytical report
+            report_response = self._generate_report(user_question, raw_data_response)
 
             return {
                 "status": "success",
                 "metadata_phase": metadata_response,
-                "execution_phase": data_response,
+                "execution_phase": raw_data_response,
+                "report": report_response.get("answer", ""),
             }
 
         except Exception as e:
