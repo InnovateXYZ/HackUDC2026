@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AVAILABLE_DATASETS from 'virtual:available-datasets';
 
 const STEP_LABELS = ['Question & Datasets', 'Data & Filters'];
@@ -30,6 +30,18 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
             setSelectedDatasets(AVAILABLE_DATASETS.map((d) => d.value));
         }
     };
+
+    // Close datasets dropdown when clicking outside
+    const datasetsRef = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (datasetsOpen && datasetsRef.current && !datasetsRef.current.contains(e.target)) {
+                setDatasetsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [datasetsOpen]);
 
     // voice recognition state
     const [listening, setListening] = useState(false);
@@ -185,7 +197,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             <h4 className="text-sm font-semibold text-white mb-2">Select Datasets</h4>
 
                             {/* Dropdown trigger */}
-                            <div className="relative">
+                            <div className="relative" ref={datasetsRef}>
                                 <button
                                     type="button"
                                     onClick={() => setDatasetsOpen((o) => !o)}
