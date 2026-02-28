@@ -28,6 +28,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+  color: white;
 }
 
 .input-group {
@@ -40,18 +41,85 @@ body {
 input {
   padding: 0.8rem;
   border-radius: 4px;
-  border: 1px solid #646cff;
+  border: 1px solid #646cff; /* neutral when not focused */
   background: #1a1a1a;
   color: white;
   outline: none;
 }
 
 input:focus {
-  border-color: #535bf2;
+  border-color: #f47721; /* orange when active */
 }
 
 button {
   margin-top: 1rem;
   cursor: pointer;
   transition: border-color 0.25s;
+}
+
+/* unify login button style with register */
+.login-form button,
+.register-form button {
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  background-color: #f47721;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 4px;
+}
+/* estilos de registro */
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.register-form {
+  background: #242424; /* same dark background as login */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  color: white;
+}
+
+.register-form button {
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  background-color: #f47721;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 4px;
+}
+
+/* link para cambiar de modo */
+.switch-text {
+  font-size: 0.8rem;
+  color: white;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.switch-link {
+  color: #f47721;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.switch-box {
+  background: #2a2a2a;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  text-align: center;
 }
