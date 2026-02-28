@@ -70,48 +70,66 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center w-full" style={{ backgroundColor: 'var(--color-base)' }}>
-      <form onSubmit={handleSubmit} className="p-8 rounded-lg shadow-lg w-full max-w-sm flex flex-col gap-5" style={{ backgroundColor: 'var(--color-surface-dark0)', color: 'var(--color-text)' }}>
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Log In</h2>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <div className="flex flex-col gap-2 text-left">
-          <label htmlFor="login-email" style={{ color: 'var(--color-text)' }}>Email</label>
-          <input
-            id="login-email"
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@mail.com"
-            required
-            className="input-base"
-          />
+    <div className="min-h-screen flex items-center justify-center w-full bg-[#242424]">
+      <div className="w-full max-w-md px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white">
+            <span className="text-[#f47721]">Denodo</span> Data Explorer
+          </h1>
+          <p className="text-sm text-gray-400 mt-2">Sign in to your account</p>
         </div>
 
-        <div className="flex flex-col gap-2 text-left">
-          <label htmlFor="login-password" style={{ color: 'var(--color-text)' }}>Password:</label>
-          <input
-            id="login-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="********"
-            required
-            className="input-base"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 flex flex-col gap-5 shadow-lg">
+          {error && (
+            <div className="px-4 py-2 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
 
-        <button type="submit" className="btn-primary mt-2">Log In</button>
-        <div className="p-2 rounded mt-2 text-center" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
-          <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-            Don't have an account?{' '}
-            <button type="button" className="underline" style={{ color: 'var(--color-denodo)' }} onClick={() => navigate('/register')}>
-              Click here
-            </button>
-          </p>
-        </div>
-      </form>
+          <div className="flex flex-col gap-2 text-left">
+            <label htmlFor="login-email" className="text-sm font-medium text-gray-300">Email</label>
+            <input
+              id="login-email"
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@mail.com"
+              required
+              className="w-full px-3 py-2 rounded-lg bg-[#2a2a2a] border border-[#444] text-white placeholder-gray-500 outline-none focus:border-[#f47721] focus:ring-1 focus:ring-[#f47721]/30 transition-colors"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 text-left">
+            <label htmlFor="login-password" className="text-sm font-medium text-gray-300">Password</label>
+            <input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="********"
+              required
+              className="w-full px-3 py-2 rounded-lg bg-[#2a2a2a] border border-[#444] text-white placeholder-gray-500 outline-none focus:border-[#f47721] focus:ring-1 focus:ring-[#f47721]/30 transition-colors"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="mt-2 w-full py-2.5 rounded-lg font-semibold text-white bg-[#f47721] hover:bg-[#d9661a] transition-colors cursor-pointer"
+          >
+            Log In
+          </button>
+
+          <div className="text-center mt-2">
+            <p className="text-sm text-gray-400">
+              Don't have an account?{' '}
+              <button type="button" className="text-[#f47721] hover:underline font-medium" onClick={() => navigate('/register')}>
+                Create one
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ from .schemas import (
     MetadataResponse,
 )
 from .crud import create_question, get_questions_by_user
-from denodo.backend.decision_engine import GenericDecisionEngine
+from ..decision_engine import GenericDecisionEngine
 
 router = APIRouter(prefix="/questions")
 
@@ -59,7 +59,7 @@ def get_metadata(
     Returns the schema metadata so the frontend can display it before executing.
     """
     try:
-        result = engine.get_metadata(request.question)
+        result = engine.get_metadata(request.question, datasets=request.datasets)
 
         if result.get("status") == "error":
             return MetadataResponse(
@@ -103,7 +103,11 @@ def decide(
                 error=result.get("message", "Unknown error from decision engine"),
             )
 
-        answer_text = result.get("execution_phase", {}).get("answer", "")
+        # Use the formatted analytical report (Phase 3).
+        # Fall back to raw execution answer if report is empty for any reason.
+        answer_text = result.get("report", "") or result.get("execution_phase", {}).get(
+            "answer", ""
+        )
 
         # extract metrics if available
         metrics = result.get("metrics", {}) or {}

@@ -46,7 +46,7 @@ function MainScreen() {
 
 
     // Handle metadata fetch — Phase 1: discover tables/columns
-    const handleFetchMetadata = async (question) => {
+    const handleFetchMetadata = async (question, selectedDatasets) => {
         setMetadataLoading(true);
         setMetadata(null);
         setExecutionResult(null);
@@ -55,7 +55,7 @@ function MainScreen() {
             const res = await authFetch(`${API_BASE}/questions/get_metadata`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question }),
+                body: JSON.stringify({ question, datasets: selectedDatasets }),
             });
 
             if (res.ok) {
@@ -78,7 +78,7 @@ function MainScreen() {
     };
 
     // Handle stepper submission — call decision engine (Phase 2)
-    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel }) => {
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets }) => {
         setLoading(true);
         setError(null);
         try {
@@ -95,6 +95,7 @@ function MainScreen() {
                     question: prompt,
                     metadata: metadataFromStepper || null,
                     llm_model: llmModel,
+                    datasets: selectedDatasets || [],
                 }),
             });
 
