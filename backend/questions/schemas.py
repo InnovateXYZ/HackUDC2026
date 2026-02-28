@@ -49,6 +49,9 @@ class DecisionRequest(BaseModel):
     restrictions: Optional[str] = None
     metadata: str | None = None
     llm_model: str = "gemma-3-27b-it"  # Default LLM model
+    exclude_user_info: bool = (
+        False  # If True, personal info is excluded from the report
+    )
 
 
 class DecisionResponse(BaseModel):
