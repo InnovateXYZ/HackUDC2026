@@ -14,7 +14,7 @@ class GenericDecisionEngine:
         "llm_provider": "googleaistudio",
         "llm_model": "gemma-3-27b-it",
         "llm_temperature": 0,
-        "llm_max_tokens": 4096,
+        "llm_max_tokens": 8192,
         "allow_external_associations": False,
         "expand_set_views": True,
         "markdown_response": True,
@@ -30,7 +30,7 @@ class GenericDecisionEngine:
     DATA_QUESTION_EXTRA_PARAMS = {
         "check_ambiguity": True,
         "vql_execute_rows_limit": 100,
-        "llm_response_rows_limit": 15,
+        "llm_response_rows_limit": 30,
     }
 
     def __init__(
@@ -109,9 +109,42 @@ class GenericDecisionEngine:
     ) -> Dict[str, Any]:
 
         execution_prompt = (
-            f"{user_question}\n\n"
-            f"Use ONLY the following discovered schema:\n{discovered_schema}\n"
-            f"Do NOT invent new tables or columns."
+            f"You are a senior data analyst generating a professional analytical report.\n\n"
+            f'USER QUESTION:\n"{user_question}"\n\n'
+            f"AVAILABLE SCHEMA (use ONLY these tables and columns — do NOT invent new ones):\n"
+            f"{discovered_schema}\n\n"
+            f"INSTRUCTIONS — produce a detailed, well-structured Markdown report with the "
+            f"following sections. Omit a section ONLY if it is genuinely irrelevant to the "
+            f"question. Use the language of the user question (e.g. if the question is in "
+            f"Spanish, write the full report in Spanish).\n\n"
+            f"## 📋 Executive Summary\n"
+            f"A concise paragraph (3-5 sentences) giving the key takeaway that directly "
+            f"answers the user's question.\n\n"
+            f"## 🔍 Methodology\n"
+            f"Briefly explain: which tables / views were queried, any filters or joins "
+            f"applied, aggregation logic, and the rationale behind the approach.\n\n"
+            f"## 📊 Key Findings\n"
+            f"Present the main results as a numbered list. Include specific numbers, "
+            f"percentages, rankings, or comparisons. If the data supports it, highlight "
+            f"top-N rankings, trends, maximums, minimums, or outliers.\n\n"
+            f"## 📈 Data Detail\n"
+            f"Show supporting data in well-formatted Markdown tables. Add column headers "
+            f"and align numbers to the right. Limit to the most relevant rows (max ~15) "
+            f"and indicate if more data exists.\n\n"
+            f"## 💡 Insights & Interpretation\n"
+            f"Provide analytical commentary: patterns, correlations, anomalies, or "
+            f"contextual explanations that add value beyond raw numbers.\n\n"
+            f"## ✅ Recommendations\n"
+            f"Based on the data, suggest actionable next steps, areas for deeper analysis, "
+            f"or decisions the user could take.\n\n"
+            f"## ⚠️ Caveats & Limitations\n"
+            f"Note any data quality issues, missing values, scope limitations, or "
+            f"assumptions made during the analysis.\n\n"
+            f"FORMATTING RULES:\n"
+            f"- Use Markdown headings (##), bold, bullet points, and tables.\n"
+            f"- Keep the tone professional and objective.\n"
+            f"- Prioritize clarity and readability.\n"
+            f"- Every claim must be backed by the queried data.\n"
         )
 
         params = {
