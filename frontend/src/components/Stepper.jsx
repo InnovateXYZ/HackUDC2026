@@ -500,8 +500,8 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                     ) : (
                         <button
                             onClick={handleSubmit}
-                            disabled={loading}
-                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${!loading
+                            disabled={loading || metadataLoading}
+                            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${!(loading || metadataLoading)
                                 ? 'bg-[#f47721] text-white hover:bg-[#e06610]'
                                 : 'bg-[#333] text-gray-500 cursor-not-allowed'
                                 }`}

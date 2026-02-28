@@ -13,6 +13,7 @@ def create_question(
         title=question_in.title,
         answer=question_in.answer,
         user_id=owner_id,
+        restrictions=question_in.restrictions,
         time_out=question_in.time_out,
         used_tokens=question_in.used_tokens,
         date_time=question_in.date_time,

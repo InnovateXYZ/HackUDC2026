@@ -23,8 +23,19 @@ class Question(SQLModel, table=True):
     answer: str
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
+    # --- additional context --------------------------------------------------
+    restrictions: Optional[str] = Field(
+        default=None, description="User-supplied constraints / restrictions"
+    )
+
     # --- new metrics fields ------------------------------------------------
-    time_out: Optional[float] = Field(default=None, description="Request latency in seconds")
-    used_tokens: Optional[int] = Field(default=None, description="Number of tokens consumed")
-    date_time: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of creation")
+    time_out: Optional[float] = Field(
+        default=None, description="Request latency in seconds"
+    )
+    used_tokens: Optional[int] = Field(
+        default=None, description="Number of tokens consumed"
+    )
+    date_time: datetime = Field(
+        default_factory=datetime.utcnow, description="Timestamp of creation"
+    )
     model_llm: Optional[str] = Field(default=None, description="LLM model used")

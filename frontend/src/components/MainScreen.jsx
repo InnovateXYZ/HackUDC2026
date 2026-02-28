@@ -84,15 +84,13 @@ function MainScreen() {
         try {
             // Build a rich prompt from stepper data
             let prompt = question;
-            if (restrictions?.trim()) {
-                prompt += `\n\nAdditional restrictions: ${restrictions}`;
-            }
 
             const res = await authFetch(`${API_BASE}/questions/decide`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     question: prompt,
+                    restrictions: restrictions || null,
                     metadata: metadataFromStepper || null,
                     llm_model: llmModel,
                     datasets: selectedDatasets || [],

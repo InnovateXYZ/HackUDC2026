@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class QuestionCreate(BaseModel):
     title: str
     answer: str
+    restrictions: Optional[str] = None
     time_out: Optional[float] = None
     used_tokens: Optional[int] = None
     date_time: Optional[datetime] = None
@@ -19,6 +20,7 @@ class QuestionRead(BaseModel):
     title: str
     answer: str
     user_id: int
+    restrictions: Optional[str] = None
 
     # metrics
     time_out: Optional[float] = None
@@ -43,6 +45,7 @@ class MetadataResponse(BaseModel):
 
 class DecisionRequest(BaseModel):
     question: str
+    restrictions: Optional[str] = None
     metadata: str | None = None
     llm_model: str = "gemma-3-27b-it"  # Default LLM model
 

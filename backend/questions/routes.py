@@ -130,6 +130,7 @@ def decide(
         question_in = QuestionCreate(
             title=request.question,
             answer=answer_text,
+            restrictions=request.restrictions,
             time_out=time_out,
             used_tokens=used_tokens,
             model_llm=model_llm,
