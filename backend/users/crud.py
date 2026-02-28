@@ -15,7 +15,13 @@ def get_user_by_email(session: Session, email: str) -> User | None:
 def create_user(session: Session, user_create: UserCreate) -> User:
     hashed = hash_password(user_create.password)
     user = User(
-        username=user_create.username, email=user_create.email, hashed_password=hashed
+        username=user_create.username,
+        email=user_create.email,
+        hashed_password=hashed,
+        gender_identity=user_create.gender_identity,
+        name=user_create.name,
+        age=user_create.age,
+        user_preferences=user_create.user_preferences,
     )
     session.add(user)
     session.commit()

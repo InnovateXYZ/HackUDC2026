@@ -24,7 +24,7 @@ def register(user_in: UserCreate, session: Session = Depends(get_session)):
     return user
 
 
-@router.post("/login")
+@router.post("/login", response_model=UserRead)
 def login(data: LoginData, session: Session = Depends(get_session)):
     identifier = data.username or data.email
     if not identifier:
@@ -32,10 +32,5 @@ def login(data: LoginData, session: Session = Depends(get_session)):
     user = authenticate_user(session, identifier, data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    # For now: return a simple success object (no JWT implemented)
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "message": "login successful",
-    }
+    # Return the user object (all readable fields) for now; no JWT implemented yet
+    return user
