@@ -12,6 +12,7 @@ function MainScreen() {
     const [loading, setLoading] = useState(false);
     const [metadataLoading, setMetadataLoading] = useState(false);
     const [metadata, setMetadata] = useState(null);
+    const [executionResult, setExecutionResult] = useState(null);
     const [error, setError] = useState(null);
 
     // Get user from localStorage
@@ -48,6 +49,7 @@ function MainScreen() {
     const handleFetchMetadata = async (question) => {
         setMetadataLoading(true);
         setMetadata(null);
+        setExecutionResult(null);
         setError(null);
         try {
             const res = await authFetch(`${API_BASE}/questions/get_metadata`, {
@@ -62,6 +64,7 @@ function MainScreen() {
                     setError(data.error || 'Metadata discovery returned an error');
                 } else {
                     setMetadata(data.metadata);
+                    setExecutionResult(data.execution_result || null);
                 }
             } else {
                 const err = await res.json().catch(() => ({}));
@@ -122,6 +125,7 @@ function MainScreen() {
     const handleNewChat = () => {
         setSelectedQuestion(null);
         setMetadata(null);
+        setExecutionResult(null);
         setError(null);
     };
 
@@ -144,7 +148,7 @@ function MainScreen() {
 
         if (loading) {
             return (
-                <div className="w-full max-w-2xl mx-auto">
+                <div className="w-full max-w-4xl mx-auto">
                     <div className="bg-[#1e1e1e] rounded-xl p-10 border border-[#333] flex flex-col items-center gap-5">
                         <div className="relative">
                             <div className="w-16 h-16 rounded-full border-4 border-[#333] border-t-[#f47721] animate-spin" />
@@ -179,6 +183,7 @@ function MainScreen() {
                     loading={loading}
                     metadataLoading={metadataLoading}
                     metadata={metadata}
+                    executionResult={executionResult}
                 />
             </div>
         );
@@ -209,7 +214,7 @@ function MainScreen() {
                 </header>
 
                 {/* Content */}
-                <div className={`flex-1 overflow-y-auto p-6 ${selectedQuestion ? 'flex items-start justify-center' : 'flex items-center justify-center'}`}>
+                <div className="flex-1 overflow-y-auto p-6 flex items-start justify-center">
                     {renderContent()}
                 </div>
             </main>

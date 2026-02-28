@@ -66,9 +66,11 @@ def get_metadata(
                 error=result.get("message", "Unknown error from decision engine"),
             )
 
+        raw = result.get("raw_metadata", {})
         return MetadataResponse(
             status="success",
             metadata=result.get("metadata", ""),
+            execution_result=raw.get("execution_result") or raw,
         )
 
     except Exception as e:

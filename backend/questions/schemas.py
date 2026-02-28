@@ -1,3 +1,5 @@
+from typing import Any, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -22,6 +24,7 @@ class MetadataRequest(BaseModel):
 class MetadataResponse(BaseModel):
     status: str
     metadata: str | None = None
+    execution_result: Any | None = None
     error: str | None = None
 
 
