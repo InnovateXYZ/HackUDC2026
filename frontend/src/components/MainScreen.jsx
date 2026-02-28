@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '../utils/auth';
+import ReportView from './ReportView';
 import Sidebar from './Sidebar';
 import Stepper from './Stepper';
 
@@ -41,29 +42,37 @@ function MainScreen() {
     }, [fetchHistory]);
 
 
-    // Handle stepper submission
-    const handleSubmit = async ({ dataset, columns, title }) => {
+    // Handle stepper submission — call decision engine
+    const handleSubmit = async ({ question, restrictions }) => {
         setLoading(true);
         setError(null);
         try {
-            const res = await authFetch(`${API_BASE}/questions/`, {
+            // Build a rich prompt from stepper data
+            let prompt = question;
+            if (restrictions?.trim()) {
+                prompt += `\n\nAdditional restrictions: ${restrictions}`;
+            }
+
+            const res = await authFetch(`${API_BASE}/questions/decide`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title,
-                    answers: [],
-                    dataset,
-                    columns,
-                }),
+                body: JSON.stringify({ question: prompt }),
             });
+
             if (res.ok) {
                 const data = await res.json();
-                setSelectedQuestion(data);
-                // Refresh history
-                await fetchHistory();
+                if (data.status === 'error') {
+                    setError(data.error || 'Decision engine returned an error');
+                } else {
+                    setSelectedQuestion({
+                        title: question,
+                        answer: data.answer,
+                        restrictions,
+                    });
+                }
             } else {
                 const err = await res.json().catch(() => ({}));
-                setError(err.detail || 'Failed to submit question');
+                setError(err.detail || 'Failed to get answer from decision engine');
             }
         } catch (err) {
             setError('Could not connect to the server');
@@ -80,6 +89,54 @@ function MainScreen() {
     const handleSelectQuestion = (q) => {
         setSelectedQuestion(q);
         setError(null);
+    };
+
+    const renderContent = () => {
+        if (selectedQuestion) {
+            return (
+                <ReportView
+                    question={selectedQuestion.title}
+                    answer={selectedQuestion.answer}
+                    restrictions={selectedQuestion.restrictions}
+                    onNewQuery={handleNewChat}
+                />
+            );
+        }
+
+        if (loading) {
+            return (
+                <div className="w-full max-w-2xl mx-auto">
+                    <div className="bg-[#1e1e1e] rounded-xl p-10 border border-[#333] flex flex-col items-center gap-5">
+                        <div className="relative">
+                            <div className="w-16 h-16 rounded-full border-4 border-[#333] border-t-[#f47721] animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#f47721]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-lg font-semibold text-white mb-1">Analyzing your question...</h3>
+                            <p className="text-sm text-gray-400">
+                                The AI is discovering relevant data and generating your answer.
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2">This may take a moment</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="w-full">
+                {error && (
+                    <div className="max-w-2xl mx-auto mb-4 px-4 py-2 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">
+                        {error}
+                    </div>
+                )}
+                <Stepper onSubmit={handleSubmit} loading={loading} />
+            </div>
+        );
     };
 
     return (
@@ -107,79 +164,8 @@ function MainScreen() {
                 </header>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto flex items-center justify-center p-6">
-                    {/* Metadata preview removed to avoid failing network call on mount */}
-                    {selectedQuestion ? (
-                        /* Show selected / submitted question detail */
-                        <div className="w-full max-w-2xl mx-auto">
-                            <div className="bg-[#1e1e1e] rounded-xl p-6 border border-[#333]">
-                                <div className="flex items-start justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-white">
-                                        {selectedQuestion.title}
-                                    </h3>
-                                    <button
-                                        onClick={handleNewChat}
-                                        className="text-xs text-gray-400 hover:text-[#f47721] transition-colors"
-                                    >
-                                        + New query
-                                    </button>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div>
-                                        <span className="text-xs text-gray-500 uppercase tracking-wider">
-                                            Dataset
-                                        </span>
-                                        <p className="text-sm text-[#f47721] mt-0.5">
-                                            {selectedQuestion.dataset?.replace(/_/g, ' ')}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <span className="text-xs text-gray-500 uppercase tracking-wider">
-                                            Columns
-                                        </span>
-                                        <div className="flex flex-wrap gap-1.5 mt-1">
-                                            {selectedQuestion.columns?.map((col) => (
-                                                <span
-                                                    key={col}
-                                                    className="inline-block px-2 py-0.5 rounded-full bg-[#f4772130] text-[#f47721] text-xs"
-                                                >
-                                                    {col}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {selectedQuestion.answers &&
-                                        selectedQuestion.answers.length > 0 && (
-                                            <div>
-                                                <span className="text-xs text-gray-500 uppercase tracking-wider">
-                                                    Answers
-                                                </span>
-                                                <div className="mt-1 space-y-1">
-                                                    {selectedQuestion.answers.map((a, i) => (
-                                                        <p key={i} className="text-sm text-gray-200 bg-[#2a2a2a] px-3 py-2 rounded-lg">
-                                                            {a}
-                                                        </p>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        /* Stepper for new query */
-                        <div className="w-full">
-                            {error && (
-                                <div className="max-w-2xl mx-auto mb-4 px-4 py-2 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">
-                                    {error}
-                                </div>
-                            )}
-                            <Stepper onSubmit={handleSubmit} loading={loading} />
-                        </div>
-                    )}
+                <div className={`flex-1 overflow-y-auto p-6 ${selectedQuestion ? 'flex items-start justify-center' : 'flex items-center justify-center'}`}>
+                    {renderContent()}
                 </div>
             </main>
         </div>

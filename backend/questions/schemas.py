@@ -16,3 +16,13 @@ class QuestionRead(QuestionCreate):
     user_id: int
 
     model_config = {"from_attributes": True}
+
+
+class DecisionRequest(BaseModel):
+    question: str
+
+
+class DecisionResponse(BaseModel):
+    status: str
+    answer: str | None = None
+    error: str | None = None
