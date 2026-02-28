@@ -91,10 +91,21 @@ def decide(
     database with the answer, and return the result. If metadata is provided
     (from a prior /get_metadata call), skips the metadata discovery phase."""
     try:
+        # Build user profile dict from the authenticated user
+        user_profile = {
+            "name": current_user.name,
+            "date_of_birth": (
+                str(current_user.date_of_birth) if current_user.date_of_birth else None
+            ),
+            "gender_identity": current_user.gender_identity,
+            "user_preferences": current_user.user_preferences,
+        }
+
         result = engine.answer(
             request.question,
             discovered_schema=request.metadata,
             llm_model=request.llm_model,
+            user_profile=user_profile,
         )
 
         if result.get("status") == "error":

@@ -10,7 +10,7 @@ class UserCreate(BaseModel):
     # Allow setting these optional profile fields at registration
     gender_identity: Optional[str] = None
     name: Optional[str] = None
-    age: Optional[int] = None
+    date_of_birth: Optional[datetime.date] = None
     user_preferences: Optional[str] = None
 
 
@@ -21,7 +21,7 @@ class UserRead(BaseModel):
     # Include new profile fields in read responses
     gender_identity: Optional[str] = None
     name: Optional[str] = None
-    age: Optional[int] = None
+    date_of_birth: Optional[datetime.date] = None
     user_preferences: Optional[str] = None
     created_at: datetime.datetime
 

@@ -146,7 +146,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                placeholder="e.g. Which countries won the most gold medals in swimming events? Show me a breakdown by year and compare the top 5 nations."
+                                placeholder="e.g. Is a good moment to invest in renting in Barcelona?"
                                 rows={5}
                                 className="w-full flex-1 px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
                             />

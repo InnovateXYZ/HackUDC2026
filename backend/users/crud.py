@@ -20,7 +20,7 @@ def create_user(session: Session, user_create: UserCreate) -> User:
         hashed_password=hashed,
         gender_identity=user_create.gender_identity,
         name=user_create.name,
-        age=user_create.age,
+        date_of_birth=user_create.date_of_birth,
         user_preferences=user_create.user_preferences,
     )
     session.add(user)

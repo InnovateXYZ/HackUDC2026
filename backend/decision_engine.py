@@ -245,6 +245,12 @@ class GenericDecisionEngine:
         "You are a senior data analyst. Using ONLY the data provided below, "
         "generate a professional analytical report in **Markdown**.\n\n"
         'USER QUESTION:\n"{user_question}"\n\n'
+        "USER PROFILE (use this to personalise the report — tone, focus, "
+        "and recommendations):\n"
+        "- Name: {user_name}\n"
+        "- Date of birth: {user_date_of_birth}\n"
+        "- Gender identity: {user_gender}\n"
+        "- Preferences / interests: {user_preferences}\n\n"
         "RAW DATA / ANSWER FROM THE DATABASE:\n"
         "```\n{raw_data}\n```\n\n"
         "VQL QUERY USED (for methodology reference):\n"
@@ -253,7 +259,10 @@ class GenericDecisionEngine:
         "Do NOT skip any section. If a section has limited relevance, still "
         "include it with a brief note. Write the ENTIRE report in the SAME "
         "language as the user question (e.g. if it is in Spanish, write "
-        "everything in Spanish).\n\n"
+        "everything in Spanish). Personalise the report for the user: "
+        "address them by name when available, tailor insights and "
+        "recommendations to their stated preferences, date of birth, and "
+        "interests.\n\n"
         "## 📋 Executive Summary\n"
         "A concise paragraph (3-5 sentences) giving the key takeaway that "
         "directly answers the user's question.\n\n"
@@ -290,19 +299,28 @@ class GenericDecisionEngine:
         self,
         user_question: str,
         raw_data_response: Dict[str, Any],
+        user_profile: Dict[str, Any] | None = None,
     ) -> Dict[str, Any]:
         """Take the raw data returned by answerDataQuestion and ask the LLM
         (via answerMetadataQuestion, which does NOT execute VQL) to format
         it as a structured analytical report.  Because no VQL generation is
-        involved in this call, the LLM can focus 100 % on formatting."""
+        involved in this call, the LLM can focus 100 % on formatting.
+
+        If *user_profile* is provided it is injected into the prompt so the
+        report is personalised for the user."""
 
         raw_answer = raw_data_response.get("answer", str(raw_data_response))
         vql = raw_data_response.get("vql", "N/A")
 
+        profile = user_profile or {}
         report_prompt = self.REPORT_TEMPLATE.format(
             user_question=user_question,
             raw_data=raw_answer,
             vql=vql,
+            user_name=profile.get("name") or "N/A",
+            user_date_of_birth=profile.get("date_of_birth") or "N/A",
+            user_gender=profile.get("gender_identity") or "N/A",
+            user_preferences=profile.get("user_preferences") or "N/A",
         )
 
         params = {**self.DEFAULT_PARAMS, "question": report_prompt}
@@ -346,10 +364,12 @@ class GenericDecisionEngine:
         user_question: str,
         discovered_schema: str | None = None,
         llm_model: str | None = None,
+        user_profile: Dict[str, Any] | None = None,
     ) -> Dict[str, Any]:
         """If discovered_schema is provided, skip the metadata phase and go
         straight to execution. Otherwise run both phases as before.
-        If llm_model is provided, use it instead of the default."""
+        If llm_model is provided, use it instead of the default.
+        If user_profile is provided, personalise the report for the user."""
 
         # Use provided llm_model or fallback to default
         if llm_model is None:
@@ -379,7 +399,9 @@ class GenericDecisionEngine:
             raw_data_response = self._fetch_raw_data(user_question)
 
             # Phase 3 — format the raw data into the analytical report
-            report_response = self._generate_report(user_question, raw_data_response)
+            report_response = self._generate_report(
+                user_question, raw_data_response, user_profile=user_profile
+            )
 
             return {
                 "status": "success",

@@ -8,7 +8,7 @@ function Register() {
   const [confirm, setConfirm] = useState('');
   const [name, setName] = useState('');
   const [genderIdentity, setGenderIdentity] = useState('');
-  const [age, setAge] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [userPreferences, setUserPreferences] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ function Register() {
       // backend expects these field names (see backend schemas)
       name: name || undefined,
       gender_identity: genderIdentity || undefined,
-      age: age ? Number(age) : undefined,
+      date_of_birth: dateOfBirth || undefined,
       user_preferences: userPreferences || undefined,
     };
 
@@ -138,15 +138,14 @@ function Register() {
                 </div>
 
                 <div className="flex flex-col gap-2 text-left">
-                  <label htmlFor="register-age" className="text-sm text-gray-400">Age</label>
+                  <label htmlFor="register-dob" className="text-sm text-gray-400">Date of birth</label>
                   <input
-                    id="register-age"
-                    type="number"
-                    min="0"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="e.g. 30"
-                    className="w-full px-3 py-2 rounded-lg bg-[#1e1e1e] border border-[#444] text-white placeholder-gray-500 outline-none focus:border-[#f47721] focus:ring-1 focus:ring-[#f47721]/30 transition-colors"
+                    id="register-dob"
+                    type="date"
+                    max={new Date().toISOString().split('T')[0]}
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-[#1e1e1e] border border-[#444] text-white placeholder-gray-500 outline-none focus:border-[#f47721] focus:ring-1 focus:ring-[#f47721]/30 transition-colors [color-scheme:dark]"
                   />
                 </div>
 
