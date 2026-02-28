@@ -3,6 +3,10 @@ import os
 
 from sqlmodel import SQLModel, create_engine, Session
 
+# Import models so they are registered with metadata
+from .users.models import User  # noqa: F401
+from .questions.models import Question  # noqa: F401
+
 BASE_DIR = os.path.dirname(__file__)
 DB_FILE = os.path.join(BASE_DIR, "project.db")
 DATABASE_URL = f"sqlite:///{DB_FILE}"

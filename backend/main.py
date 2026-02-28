@@ -1,10 +1,16 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db import init_db
+from backend.decision_engine import GenericDecisionEngine
 
 from .users.routes import router as users_router
 from .questions.routes import router as questions_router
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="HackUDC2026")
 
@@ -27,6 +33,10 @@ app.add_middleware(
 def on_startup():
     # initialize DB and create tables if not present (idempotent)
     init_db()
+
+    # Load AI SDK metadata in background (retries every 5 s on failure)
+    engine = GenericDecisionEngine()
+    engine.load_metadata_background()
 
 
 # register users router (endpoints moved to backend/users/routes.py)
