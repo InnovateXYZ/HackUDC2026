@@ -49,6 +49,7 @@ class DecisionRequest(BaseModel):
     restrictions: Optional[str] = None
     metadata: str | None = None
     llm_model: str = "gemma-3-27b-it"  # Default LLM model
+    save_to_history: bool = True  # If False, the question won't be persisted
 
 
 class DecisionResponse(BaseModel):

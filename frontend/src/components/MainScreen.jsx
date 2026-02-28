@@ -78,7 +78,7 @@ function MainScreen() {
     };
 
     // Handle stepper submission — call decision engine (Phase 2)
-    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets }) => {
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets, saveToHistory = true }) => {
         setLoading(true);
         setError(null);
         try {
@@ -94,6 +94,7 @@ function MainScreen() {
                     metadata: metadataFromStepper || null,
                     llm_model: llmModel,
                     datasets: selectedDatasets || [],
+                    save_to_history: saveToHistory,
                 }),
             });
 
@@ -108,9 +109,10 @@ function MainScreen() {
                         answer: data.answer,
                         restrictions,
                         like: true,
+                        temporary: !saveToHistory,
                     });
                     // Refresh sidebar history so the new question appears
-                    await fetchHistory();
+                    if (saveToHistory) await fetchHistory();
                 }
             } else {
                 const err = await res.json().catch(() => ({}));
@@ -144,6 +146,7 @@ function MainScreen() {
                     answer={selectedQuestion.answer}
                     restrictions={selectedQuestion.restrictions}
                     like={selectedQuestion.like}
+                    temporary={selectedQuestion.temporary}
                     onLikeChange={(newLike) => setSelectedQuestion(prev => ({ ...prev, like: newLike }))}
                     onNewQuery={handleNewChat}
                 />
