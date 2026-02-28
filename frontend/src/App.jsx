@@ -1,19 +1,19 @@
-import { useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+// Styling now handled via Tailwind in src/index.css and utility classes in components
 import Login from './components/Login'
 import Register from './components/Register'
-import './App.css'
 
 function App() {
-  const [mode, setMode] = useState('register') // start on register
-
   return (
-    <div className="App">
-      {mode === 'register' ? (
-        <Register onSwitch={setMode} />
-      ) : (
-        <Login onSwitch={setMode} />
-      )}
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen">
+        <Routes>
+          <Route path="/" element={<Navigate to="/register" replace />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
 
