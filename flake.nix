@@ -17,6 +17,8 @@
         pylint
         uvicorn
         email-validator
+        python-jose
+        cryptography
       ];
     in
     {

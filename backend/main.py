@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from backend.db import init_db
 
 from .users.routes import router as users_router
+from .questions.routes import router as questions_router
 
 app = FastAPI(title="HackUDC2026")
 
@@ -15,3 +16,5 @@ def on_startup():
 
 # register users router (endpoints moved to backend/users/routes.py)
 app.include_router(users_router)
+# register questions router
+app.include_router(questions_router)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from ..db import get_session
@@ -9,6 +9,8 @@ from .crud import (
     get_user_by_email,
     authenticate_user,
 )
+from .auth import create_access_token
+from .schemas import TokenWithUser
 
 router = APIRouter()
 
@@ -24,13 +26,18 @@ def register(user_in: UserCreate, session: Session = Depends(get_session)):
     return user
 
 
-@router.post("/login", response_model=UserRead)
+@router.post("/login", response_model=TokenWithUser)
 def login(data: LoginData, session: Session = Depends(get_session)):
     identifier = data.username or data.email
     if not identifier:
         raise HTTPException(status_code=400, detail="Provide username or email")
     user = authenticate_user(session, identifier, data.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    # Return the user object (all readable fields) for now; no JWT implemented yet
-    return user
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+        )
+
+    # create JWT access token
+    access_token = create_access_token({"sub": str(user.id)})
+
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
