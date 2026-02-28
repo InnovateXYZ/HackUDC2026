@@ -90,7 +90,7 @@ function Login() {
         <div className="p-2 rounded mt-2 text-center" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
           <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
             Don't have an account?{' '}
-            <button type="button" className="underline" style={{ color: 'var(--color-accent)' }} onClick={() => navigate('/register')}>
+            <button type="button" className="underline" style={{ color: 'var(--color-denodo)' }} onClick={() => navigate('/register')}>
               Click here
             </button>
           </p>

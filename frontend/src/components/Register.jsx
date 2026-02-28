@@ -186,7 +186,7 @@ function Register() {
 
             <div className="hidden md:block p-2 rounded text-sm" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
               <p style={{ color: 'var(--color-text-alt)' }}>Already have an account?</p>
-              <button type="button" className="underline text-sm" style={{ color: 'var(--color-accent)' }} onClick={() => navigate('/login')}>
+              <button type="button" className="underline text-sm" style={{ color: 'var(--color-denodo)' }} onClick={() => navigate('/login')}>
                 Log in
               </button>
             </div>
@@ -196,7 +196,7 @@ function Register() {
           <div className="md:col-span-2 block md:hidden p-2 rounded mt-2 text-center" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
             <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
               Already have an account?{' '}
-              <button type="button" className="underline" style={{ color: 'var(--color-accent)' }} onClick={() => navigate('/login')}>
+              <button type="button" className="underline" style={{ color: 'var(--color-denodo)' }} onClick={() => navigate('/login')}>
                 Click here
               </button>
             </p>

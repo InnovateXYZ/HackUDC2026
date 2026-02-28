@@ -105,7 +105,7 @@ function Home() {
       >
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: 'var(--color-accent)' }}
+          style={{ backgroundColor: 'var(--color-denodo)' }}
         >
           <span className="text-white font-bold text-lg">
             {user?.username.charAt(0).toUpperCase()}

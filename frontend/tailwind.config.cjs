@@ -8,7 +8,8 @@ module.exports = {
         extend: {
             colors: {
                 // Semantic Color Palette (Denodo)
-                accent: '#f0514a',              // Orange/red for actions & buttons
+                denodo: '#f0514a',              // Red/orange for actions & buttons
+                accent: '#006699',              // Blue for secondary actions
                 base: '#143244',                // Dark blue for main background
                 'surface-dark0': '#112533',     // Darker blue for components & cards
                 'surface-light0': '#ffffff',    // White for surfaces
