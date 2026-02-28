@@ -79,7 +79,7 @@ function MainScreen() {
     };
 
     // Handle stepper submission — call decision engine (Phase 2)
-    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets }) => {
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets, saveToHistory = true }) => {
         setLoading(true);
         setError(null);
         try {
@@ -96,6 +96,7 @@ function MainScreen() {
                     llm_model: llmModel,
                     datasets: selectedDatasets || [],
                     exclude_user_info: anonymousMode,
+                    save_to_history: saveToHistory,
                 }),
             });
 
@@ -110,9 +111,10 @@ function MainScreen() {
                         answer: data.answer,
                         restrictions,
                         like: true,
+                        temporary: !saveToHistory,
                     });
                     // Refresh sidebar history so the new question appears
-                    await fetchHistory();
+                    if (saveToHistory) await fetchHistory();
                 }
             } else {
                 const err = await res.json().catch(() => ({}));
@@ -146,6 +148,7 @@ function MainScreen() {
                     answer={selectedQuestion.answer}
                     restrictions={selectedQuestion.restrictions}
                     like={selectedQuestion.like}
+                    temporary={selectedQuestion.temporary}
                     onLikeChange={(newLike) => setSelectedQuestion(prev => ({ ...prev, like: newLike }))}
                     onNewQuery={handleNewChat}
                 />
@@ -217,8 +220,8 @@ function MainScreen() {
                             onClick={() => setAnonymousMode((prev) => !prev)}
                             title={anonymousMode ? 'Personal info excluded from reports' : 'Personal info included in reports'}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${anonymousMode
-                                    ? 'bg-[#f47721]/20 border-[#f47721] text-[#f47721]'
-                                    : 'border-[#444] text-gray-400 hover:text-white hover:border-[#666]'
+                                ? 'bg-[#f47721]/20 border-[#f47721] text-[#f47721]'
+                                : 'border-[#444] text-gray-400 hover:text-white hover:border-[#666]'
                                 }`}
                         >
                             {anonymousMode ? (

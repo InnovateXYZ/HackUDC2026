@@ -52,6 +52,7 @@ class DecisionRequest(BaseModel):
     exclude_user_info: bool = (
         False  # If True, personal info is excluded from the report
     )
+    save_to_history: bool = True  # If False, the question won't be persisted
 
 
 class DecisionResponse(BaseModel):

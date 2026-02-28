@@ -16,6 +16,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
     const [llmModel, setLlmModel] = useState('gemma-3-27b-it');
+    const [temporary, setTemporary] = useState(false);
 
     const toggleDataset = (value) => {
         setSelectedDatasets((prev) =>
@@ -98,6 +99,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
             metadata,
             llmModel,
             selectedDatasets,
+            saveToHistory: !temporary,
         });
     };
 
@@ -483,6 +485,29 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                         Previous
                     </button>
 
+                    <div className="flex items-center gap-3">
+                        {/* Temporary query cloud toggle */}
+                        <button
+                            type="button"
+                            onClick={() => setTemporary(t => !t)}
+                            title={temporary ? 'Temporary query — will NOT be saved' : 'Query will be saved to history'}
+                            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition-colors border ${
+                                temporary
+                                    ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10'
+                                    : 'border-[#333] text-gray-400 hover:text-white hover:bg-[#1e1e1e]'
+                            }`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                            </svg>
+                            {temporary && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 absolute left-3 top-2 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-12.728 12.728" />
+                                </svg>
+                            )}
+                            {temporary ? 'Temporary' : 'Saved'}
+                        </button>
+
                     {currentStep < 1 ? (
                         <button
                             onClick={handleNext}
@@ -524,6 +549,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             )}
                         </button>
                     )}
+                    </div>
                 </div>
             </div>
         </div>

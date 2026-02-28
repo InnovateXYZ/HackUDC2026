@@ -133,20 +133,23 @@ def decide(
         model_llm = metrics.get("model_llm")
 
         # Persist the question + answer + metrics so it appears in the user's history
-        question_in = QuestionCreate(
-            title=request.question,
-            answer=answer_text,
-            restrictions=request.restrictions,
-            time_out=time_out,
-            used_tokens=used_tokens,
-            model_llm=model_llm,
-        )
-        saved = create_question(session, question_in, owner_id=current_user.id)
+        saved_id = None
+        if request.save_to_history:
+            question_in = QuestionCreate(
+                title=request.question,
+                answer=answer_text,
+                restrictions=request.restrictions,
+                time_out=time_out,
+                used_tokens=used_tokens,
+                model_llm=model_llm,
+            )
+            saved = create_question(session, question_in, owner_id=current_user.id)
+            saved_id = saved.id
 
         return DecisionResponse(
             status="success",
             answer=answer_text,
-            question_id=saved.id,
+            question_id=saved_id,
         )
 
     except Exception as e:
