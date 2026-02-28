@@ -180,16 +180,16 @@ function Register() {
           </div>
 
           <div className="md:col-span-2 flex items-center justify-between gap-4 mt-2">
-            <button type="submit" className="btn-primary w-full md:w-auto" disabled={loading}>
-              {loading ? 'Creating…' : 'Create account'}
-            </button>
-
             <div className="hidden md:block p-2 rounded text-sm" style={{ backgroundColor: 'var(--color-overlay-light0)' }}>
               <p style={{ color: 'var(--color-text-alt)' }}>Already have an account?</p>
               <button type="button" className="underline text-sm" style={{ color: 'var(--color-denodo)' }} onClick={() => navigate('/login')}>
                 Log in
               </button>
             </div>
+
+            <button type="submit" className="btn-primary w-full md:w-auto" disabled={loading}>
+              {loading ? 'Creating…' : 'Create account'}
+            </button>
           </div>
 
           {/* Small footer for small screens */}
