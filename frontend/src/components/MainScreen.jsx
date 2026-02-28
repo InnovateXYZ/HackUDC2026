@@ -10,9 +10,6 @@ function MainScreen() {
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [metadataLoading, setMetadataLoading] = useState(false);
-    const [metadataError, setMetadataError] = useState(null);
-    const [metadata, setMetadata] = useState(null);
 
     // Get user from localStorage
     const getUser = () => {
@@ -43,35 +40,6 @@ function MainScreen() {
         fetchHistory();
     }, [fetchHistory]);
 
-    // Fetch metadata info on mount
-    useEffect(() => {
-        const fetchMetadata = async () => {
-            setMetadataLoading(true);
-            setMetadataError(null);
-            try {
-                const question = encodeURIComponent(
-                    'Dame una lista que tenga todas las vistas, y para cada vista, todas las columnas disponibles en formato json'
-                );
-                const res = await authFetch(`${API_BASE}/questions/get_metadata_info?question=${question}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setMetadata(data);
-                    console.debug('Metadata response:', data);
-                } else {
-                    const err = await res.json().catch(() => ({}));
-                    setMetadataError(err.detail || 'Failed to fetch metadata');
-                    console.warn('Metadata fetch failed', err);
-                }
-            } catch (err) {
-                setMetadataError('Could not connect to metadata service');
-                console.warn('Metadata fetch error', err);
-            } finally {
-                setMetadataLoading(false);
-            }
-        };
-
-        fetchMetadata();
-    }, []);
 
     // Handle stepper submission
     const handleSubmit = async ({ dataset, columns, title }) => {
@@ -140,30 +108,7 @@ function MainScreen() {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto flex items-center justify-center p-6">
-                    {/* Metadata preview (fetched on mount) */}
-                    <div className="absolute top-20 right-6 w-96 max-h-[60vh] overflow-auto">
-                        <div className="bg-[#111]/80 backdrop-blur rounded-lg p-3 border border-[#2a2a2a] text-xs">
-                            <div className="flex items-center justify-between mb-2">
-                                <strong className="text-sm">Metadata</strong>
-                                {metadataLoading ? (
-                                    <span className="text-gray-400 text-xs">Loading…</span>
-                                ) : metadataError ? (
-                                    <span className="text-red-400 text-xs">{metadataError}</span>
-                                ) : (
-                                    <span className="text-green-300 text-xs">Loaded</span>
-                                )}
-                            </div>
-                            <div className="whitespace-pre-wrap text-[11px] text-gray-200">
-                                {metadata ? (
-                                    <pre className="text-[11px] text-gray-200">
-                                        {JSON.stringify(metadata, null, 2)}
-                                    </pre>
-                                ) : (
-                                    <div className="text-gray-500">No metadata yet</div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    {/* Metadata preview removed to avoid failing network call on mount */}
                     {selectedQuestion ? (
                         /* Show selected / submitted question detail */
                         <div className="w-full max-w-2xl mx-auto">
