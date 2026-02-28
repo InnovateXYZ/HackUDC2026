@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { saveToken } from '../utils/auth';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -11,7 +12,6 @@ function Login() {
 
     // Estructura que espera tu servidor
     const dataToSend = {
-      username: email, // Enviamos el valor del input a ambos
       email: email,
       password: password
     };
@@ -27,16 +27,26 @@ function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Login exitoso:', data);
-        alert('¡Bienvenido!');
-        // Aquí podrías guardar el token en localStorage o redireccionar
+        console.log('Login:', data);
+        // Save token and user info if available
+        if (data.access_token) {
+          saveToken(data.access_token, data.token_type);
+        }
+        if (data.user) {
+          try {
+            localStorage.setItem('user', JSON.stringify(data.user));
+          } catch (err) {
+            console.warn('Error to save in local storage', err);
+          }
+        }
+        alert('Welcome!');
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Error al iniciar sesión');
+        setError(errorData.detail || 'Error logging in');
       }
     } catch (err) {
-      console.error('Error de red:', err);
-      setError('No se pudo conectar con el servidor');
+      console.error('Network error:', err);
+      setError('Could not connect to the server');
     }
   };
 
@@ -44,28 +54,28 @@ function Login() {
     <div className="login-container">
       <form onSubmit={handleSubmit} className="login-form">
         <h2>LogIn</h2>
-        
+
         {error && <p style={{ color: '#ff4d4d', fontSize: '0.8rem' }}>{error}</p>}
 
         <div className="input-group">
-          <label>Email o Username:</label>
-          <input 
+          <label>Email:</label>
+          <input
             type="text" // Cambiado a text para permitir username o email
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@mail.com o username"
-            required 
+            placeholder="user@mail.com"
+            required
           />
         </div>
 
         <div className="input-group">
           <label>Password:</label>
-          <input 
-            type="password" 
+          <input
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="********"
-            required 
+            required
           />
         </div>
 
