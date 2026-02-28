@@ -52,7 +52,7 @@ def decide(
     """Process a user question through the decision engine, persist it in the
     database with the answer, and return the result. Requires authentication."""
     try:
-        result = engine.answer(request.question)
+        result = engine.answer(request.question, llm_model=request.llm_model)
 
         if result.get("status") == "error":
             return DecisionResponse(

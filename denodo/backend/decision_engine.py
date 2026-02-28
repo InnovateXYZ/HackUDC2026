@@ -33,6 +33,13 @@ class GenericDecisionEngine:
         "llm_response_rows_limit": 30,
     }
 
+    # Available LLM models
+    AVAILABLE_MODELS = [
+        "gemma-3-27b-it",
+        "gemini-2.5-flash",
+        "gemini-3-flash-preview",
+    ]
+
     def __init__(
         self,
         base_url: str = "http://localhost:8008",
@@ -155,12 +162,25 @@ class GenericDecisionEngine:
 
         return self._get_with_retry("answerDataQuestion", params)
 
-    # -----------------------------
     # PUBLIC ENTRY POINT
-    # -----------------------------
-    def answer(self, user_question: str) -> Dict[str, Any]:
+    def answer(self, user_question: str, llm_model: str = None) -> Dict[str, Any]:
+        # Use provided llm_model or fallback to default
+        if llm_model is None:
+            llm_model = self.DEFAULT_PARAMS["llm_model"]
+        elif llm_model not in self.AVAILABLE_MODELS:
+            return {
+                "status": "error",
+                "message": f"Invalid LLM model. Available models: {', '.join(self.AVAILABLE_MODELS)}",
+            }
 
         try:
+            # Create modified params with the selected llm_model
+            modified_params = {**self.DEFAULT_PARAMS, "llm_model": llm_model}
+            
+            # Temporarily replace DEFAULT_PARAMS for this request
+            original_params = self.DEFAULT_PARAMS.copy()
+            self.__class__.DEFAULT_PARAMS = modified_params
+            
             metadata_response = self._discover_relevant_schema(user_question)
             discovered_schema = metadata_response.get("answer", "")
 
@@ -183,3 +203,6 @@ class GenericDecisionEngine:
                 "status": "error",
                 "message": str(e),
             }
+        finally:
+            # Restore original params
+            self.__class__.DEFAULT_PARAMS = original_params

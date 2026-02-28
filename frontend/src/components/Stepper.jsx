@@ -3,11 +3,18 @@ import DATASETS from '../utils/datasets';
 
 const STEP_LABELS = ['Question', 'Filters'];
 
+const LLM_MODELS = [
+    { value: 'gemma-3-27b-it', label: 'Gemma 3.0 27B (Default)' },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+    { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview' },
+];
+
 function Stepper({ onSubmit, loading }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [question, setQuestion] = useState('');
     const [restrictions, setRestrictions] = useState('');
     const [columnSearch, setColumnSearch] = useState('');
+    const [llmModel, setLlmModel] = useState('gemma-3-27b-it');
 
     // voice recognition state
     const [listening, setListening] = useState(false);
@@ -73,6 +80,7 @@ function Stepper({ onSubmit, loading }) {
         onSubmit({
             question,
             restrictions,
+            llmModel,
         });
     };
 
@@ -172,6 +180,41 @@ function Stepper({ onSubmit, loading }) {
                                 rows={6}
                                 className="w-full flex-1 px-4 py-3 rounded-lg border border-[#444] bg-[#2a2a2a] text-white text-sm outline-none focus:border-[#f47721] transition-colors resize-none placeholder:text-gray-500"
                             />
+                        </div>
+
+                        {/* LLM Model Selection */}
+                        <div className="mt-6 pt-4 border-t border-[#333]">
+                            <label htmlFor="llm-select" className="block text-sm font-semibold text-white mb-2">
+                                AI Model for Analysis
+                            </label>
+                            <select
+                                id="llm-select"
+                                value={llmModel}
+                                onChange={(e) => setLlmModel(e.target.value)}
+                                className="w-full px-4 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none"
+                                style={{
+                                    backgroundColor: '#2a2a2a',
+                                    borderColor: '#f47721',
+                                    color: 'white',
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = '#ff9f56';
+                                    e.target.style.boxShadow = '0 0 0 3px rgba(244, 119, 33, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = '#f47721';
+                                    e.target.style.boxShadow = 'none';
+                                }}
+                            >
+                                {LLM_MODELS.map((model) => (
+                                    <option key={model.value} value={model.value}>
+                                        {model.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-400 mt-2">
+                                Selected: <span className="text-[#f47721] font-semibold">{LLM_MODELS.find(m => m.value === llmModel)?.label}</span>
+                            </p>
                         </div>
                     </div>
                 )}                {/* Navigation buttons */}

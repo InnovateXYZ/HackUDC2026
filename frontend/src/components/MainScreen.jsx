@@ -43,7 +43,7 @@ function MainScreen() {
 
 
     // Handle stepper submission — call decision engine
-    const handleSubmit = async ({ question, restrictions }) => {
+    const handleSubmit = async ({ question, restrictions, llmModel }) => {
         setLoading(true);
         setError(null);
         try {
@@ -56,7 +56,7 @@ function MainScreen() {
             const res = await authFetch(`${API_BASE}/questions/decide`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: prompt }),
+                body: JSON.stringify({ question: prompt, llm_model: llmModel }),
             });
 
             if (res.ok) {

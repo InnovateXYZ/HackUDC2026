@@ -17,6 +17,7 @@ class QuestionRead(BaseModel):
 
 class DecisionRequest(BaseModel):
     question: str
+    llm_model: str = "gemma-3-27b-it"  # Default LLM model
 
 
 class DecisionResponse(BaseModel):
