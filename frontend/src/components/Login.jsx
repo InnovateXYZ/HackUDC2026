@@ -8,6 +8,23 @@ function Login() {
   const [error, setError] = useState(null); // To display login errors
   const navigate = useNavigate();
 
+  const toErrorMessage = (detail, fallback = 'Error logging in') => {
+    if (!detail) return fallback;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      const first = detail[0];
+      if (typeof first === 'string') return first;
+      if (first && typeof first === 'object') {
+        return first.msg || first.message || fallback;
+      }
+      return fallback;
+    }
+    if (typeof detail === 'object') {
+      return detail.msg || detail.message || fallback;
+    }
+    return fallback;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -43,12 +60,12 @@ function Login() {
         }
         navigate('/home');
       } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Error logging in');
+        const errorData = await response.json().catch(() => ({}));
+        setError(toErrorMessage(errorData.detail ?? errorData.message));
       }
     } catch (err) {
       console.error('Network error:', err);
-      setError('Could not connect to the server');
+      setError(err?.message || 'Could not connect to the server');
     }
   };
 
