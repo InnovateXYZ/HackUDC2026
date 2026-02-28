@@ -155,14 +155,28 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             <button
                                 type="button"
                                 onClick={startVoice}
-                                className={`absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all
+                                className={`absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all duration-200
                                     ${listening
-                                        ? 'bg-red-500 animate-pulse'
-                                        : 'bg-[#f47721] hover:bg-[#ff9f56]'
+                                        ? 'bg-red-500 animate-pulse ring-2 ring-red-400/50'
+                                        : 'bg-[#f47721]/90 hover:bg-[#f47721] hover:scale-105 active:scale-95'
                                     }`}
                                 title="Hablar"
                             >
-                                🎤
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="w-5 h-5 text-white"
+                                >
+                                    <rect x="9" y="2" width="6" height="12" rx="3" />
+                                    <path d="M5 10a7 7 0 0 0 14 0" />
+                                    <line x1="12" y1="17" x2="12" y2="22" />
+                                    <line x1="8" y1="22" x2="16" y2="22" />
+                                </svg>
                             </button>
                         </div>
 
