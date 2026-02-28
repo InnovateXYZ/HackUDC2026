@@ -4,7 +4,7 @@ import os
 from sqlmodel import SQLModel, create_engine, Session
 
 BASE_DIR = os.path.dirname(__file__)
-DB_FILE = os.path.join(BASE_DIR, "users.db")
+DB_FILE = os.path.join(BASE_DIR, "project.db")
 DATABASE_URL = f"sqlite:///{DB_FILE}"
 
 # Use check_same_thread=False for SQLite + ASGI concurrency

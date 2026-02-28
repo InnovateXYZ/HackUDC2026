@@ -223,4 +223,4 @@ build/
 .env.production.local
 
 # Local SQLite DB used by backend during development
-backend/users.db
+backend/project.db
