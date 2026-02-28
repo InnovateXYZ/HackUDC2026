@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "/nix/store/mzwx4gii7d9lzkch5rawj21dv9f6j4vk-python3-3.12.12-env/bin/python",
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore"
+}

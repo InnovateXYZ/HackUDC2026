@@ -42,7 +42,7 @@ function Login() {
             console.warn('Error to save in local storage', err);
           }
         }
-        alert('Welcome!');
+        navigate('/home');
       } else {
         const errorData = await response.json();
         setError(errorData.detail || 'Error logging in');
