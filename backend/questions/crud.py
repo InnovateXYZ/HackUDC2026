@@ -97,6 +97,16 @@ def update_question_like(
     return question
 
 
+def delete_question(session: Session, question_id: int) -> bool:
+    """Delete a question by its id."""
+    question = session.get(Question, question_id)
+    if question is None:
+        return False
+    session.delete(question)
+    session.commit()
+    return True
+
+
 def move_question_to_folder(
     session: Session, question_id: int, folder_id: int | None
 ) -> Question | None:

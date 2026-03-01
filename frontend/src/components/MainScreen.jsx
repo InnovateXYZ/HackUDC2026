@@ -99,6 +99,26 @@ function MainScreen() {
         }
     };
 
+    const handleDeleteQuestion = async (questionId) => {
+        try {
+            const res = await authFetch(`${API_BASE}/questions/${questionId}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                // If the deleted question is currently selected, go back to new chat
+                if (selectedQuestion?.id === questionId) {
+                    setSelectedQuestion(null);
+                    setMetadata(null);
+                    setExecutionResult(null);
+                    setError(null);
+                }
+                await fetchHistory();
+            }
+        } catch (err) {
+            console.warn('Could not delete question', err);
+        }
+    };
+
 
     // Handle metadata fetch — Phase 1: discover tables/columns
     const handleFetchMetadata = async (question, selectedDatasets) => {
@@ -267,6 +287,7 @@ function MainScreen() {
                 onRenameFolder={handleRenameFolder}
                 onDeleteFolder={handleDeleteFolder}
                 onMoveQuestion={handleMoveQuestion}
+                onDeleteQuestion={handleDeleteQuestion}
             />
 
             {/* Main content area */}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { clearAuth } from '../utils/auth';
 
-function Sidebar({ history, folders, onSelectQuestion, onNewChat, onCreateFolder, onRenameFolder, onDeleteFolder, onMoveQuestion }) {
+function Sidebar({ history, folders, onSelectQuestion, onNewChat, onCreateFolder, onRenameFolder, onDeleteFolder, onMoveQuestion, onDeleteQuestion }) {
     const [collapsed, setCollapsed] = useState(false);
     const [openFolders, setOpenFolders] = useState({});
     const [creatingFolder, setCreatingFolder] = useState(false);
@@ -294,17 +294,33 @@ function Sidebar({ history, folders, onSelectQuestion, onNewChat, onCreateFolder
                                                 </p>
                                             )}
                                             {folderQuestions.map((item) => (
-                                                <button
+                                                <div
                                                     key={item.id}
-                                                    draggable
-                                                    onDragStart={(e) => handleDragStart(e, item.id)}
-                                                    onClick={() => onSelectQuestion(item)}
-                                                    onContextMenu={(e) => handleQuestionContextMenu(e, item.id)}
-                                                    className="w-full text-left px-3 py-1.5 mb-0.5 rounded text-xs text-gray-400 hover:bg-[#2a2a2a] hover:text-white transition-colors truncate cursor-grab active:cursor-grabbing"
-                                                    title={item.title}
+                                                    className="flex items-center group/q"
                                                 >
-                                                    {item.title}
-                                                </button>
+                                                    <button
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, item.id)}
+                                                        onClick={() => onSelectQuestion(item)}
+                                                        onContextMenu={(e) => handleQuestionContextMenu(e, item.id)}
+                                                        className="flex-1 text-left px-3 py-1.5 mb-0.5 rounded text-xs text-gray-400 hover:bg-[#2a2a2a] hover:text-white transition-colors truncate cursor-grab active:cursor-grabbing"
+                                                        title={item.title}
+                                                    >
+                                                        {item.title}
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onDeleteQuestion(item.id);
+                                                        }}
+                                                        className="hidden group-hover/q:block text-gray-500 hover:text-red-400 p-0.5 mr-1 flex-shrink-0"
+                                                        title="Delete question"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
@@ -330,17 +346,33 @@ function Sidebar({ history, folders, onSelectQuestion, onNewChat, onCreateFolder
                                     onDrop={(e) => handleDrop(e, null)}
                                 >
                                     {unfiledQuestions.map((item) => (
-                                        <button
+                                        <div
                                             key={item.id}
-                                            draggable
-                                            onDragStart={(e) => handleDragStart(e, item.id)}
-                                            onClick={() => onSelectQuestion(item)}
-                                            onContextMenu={(e) => handleQuestionContextMenu(e, item.id)}
-                                            className="w-full text-left px-3 py-2 mb-0.5 rounded-md text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors truncate cursor-grab active:cursor-grabbing"
-                                            title={item.title}
+                                            className="flex items-center group/q"
                                         >
-                                            {item.title}
-                                        </button>
+                                            <button
+                                                draggable
+                                                onDragStart={(e) => handleDragStart(e, item.id)}
+                                                onClick={() => onSelectQuestion(item)}
+                                                onContextMenu={(e) => handleQuestionContextMenu(e, item.id)}
+                                                className="flex-1 text-left px-3 py-2 mb-0.5 rounded-md text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors truncate cursor-grab active:cursor-grabbing"
+                                                title={item.title}
+                                            >
+                                                {item.title}
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDeleteQuestion(item.id);
+                                                }}
+                                                className="hidden group-hover/q:block text-gray-500 hover:text-red-400 p-0.5 mr-1 flex-shrink-0"
+                                                title="Delete question"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     ))}
                                     {/* Visible drop hint when dragging a question from a folder */}
                                     {draggedQuestion !== null && unfiledQuestions.length === 0 && (
@@ -392,38 +424,56 @@ function Sidebar({ history, folders, onSelectQuestion, onNewChat, onCreateFolder
                             </button>
                         </>
                     )}
-                    {contextMenu.type === 'question' && (
-                        <>
-                            <div className="px-3 py-1 text-xs text-gray-500 uppercase tracking-wider">Move to</div>
-                            {folders.map((folder) => (
+                    {contextMenu.type === 'question' && (() => {
+                        const contextQuestion = history.find((q) => q.id === contextMenu.id);
+                        const isInFolder = contextQuestion?.folder_id != null;
+                        return (
+                            <>
+                                <div className="px-3 py-1 text-xs text-gray-500 uppercase tracking-wider">Move to</div>
+                                {folders.map((folder) => (
+                                    <button
+                                        key={folder.id}
+                                        onClick={() => {
+                                            onMoveQuestion(contextMenu.id, folder.id);
+                                            setContextMenu(null);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3a3a3a] hover:text-white flex items-center gap-2"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#f47721]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                        </svg>
+                                        {folder.name}
+                                    </button>
+                                ))}
+                                {isInFolder && (
+                                    <button
+                                        onClick={() => {
+                                            onMoveQuestion(contextMenu.id, null);
+                                            setContextMenu(null);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3a3a3a] hover:text-white flex items-center gap-2 border-t border-[#444] mt-1"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Remove from folder
+                                    </button>
+                                )}
                                 <button
-                                    key={folder.id}
                                     onClick={() => {
-                                        onMoveQuestion(contextMenu.id, folder.id);
+                                        onDeleteQuestion(contextMenu.id);
                                         setContextMenu(null);
                                     }}
-                                    className="w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3a3a3a] hover:text-white flex items-center gap-2"
+                                    className="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-[#3a3a3a] hover:text-red-300 flex items-center gap-2 border-t border-[#444] mt-1"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#f47721]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
-                                    {folder.name}
+                                    Delete question
                                 </button>
-                            ))}
-                            <button
-                                onClick={() => {
-                                    onMoveQuestion(contextMenu.id, null);
-                                    setContextMenu(null);
-                                }}
-                                className="w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3a3a3a] hover:text-white flex items-center gap-2 border-t border-[#444] mt-1"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Remove from folder
-                            </button>
-                        </>
-                    )}
+                            </>
+                        );
+                    })()}
                 </div>
             )}
 

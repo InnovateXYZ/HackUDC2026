@@ -22,6 +22,7 @@ from .crud import (
     create_folder,
     create_question,
     delete_folder,
+    delete_question,
     get_folders_by_user,
     get_questions_by_user,
     move_question_to_folder,
@@ -251,3 +252,19 @@ def set_like(
     if question is None or question.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Question not found")
     return {"status": "ok", "like": question.like}
+
+
+@router.delete("/{question_id}")
+def remove_question(
+    question_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a question. Only the owner may delete."""
+    from .models import Question
+
+    question = session.get(Question, question_id)
+    if question is None or question.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Question not found")
+    delete_question(session, question_id)
+    return {"status": "ok"}
