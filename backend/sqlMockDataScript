@@ -1,0 +1,54 @@
+-- 1. LIMPIEZA
+DELETE FROM question;
+DELETE FROM folder;
+DELETE FROM user;
+
+-- 2. GENERACIÓN DE 150 USUARIOS
+INSERT INTO user (id, username, email, hashed_password, gender_identity, name, date_of_birth, created_at)
+WITH RECURSIVE cnt(x) AS (
+    SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 150
+)
+SELECT 
+    x,
+    'user_' || x,
+    'user' || x || '@example.com',
+    'hash_random_678' || x,
+    (CASE (x % 3) WHEN 0 THEN 'Male' WHEN 1 THEN 'Female' ELSE 'Non-binary' END),
+    'Nombre ' || x,
+    DATE('1980-01-01', '+' || (x * 73) || ' days'),
+    DATETIME('now', '-' || (35 + (x % 10)) || ' days')
+FROM cnt;
+
+-- 3. GENERACIÓN DE 30 CARPETAS
+INSERT INTO folder (id, name, user_id, created_at)
+WITH RECURSIVE cnt(x) AS (
+    SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 30
+)
+SELECT 
+    x,
+    'Carpeta de Trabajo ' || x,
+    (ABS(RANDOM()) % 150) + 1,
+    DATETIME('now', '-31 days')
+FROM cnt;
+
+-- 4. GENERACIÓN DE ~300 PREGUNTAS (Con ratio de Like 70/30)
+INSERT INTO question (
+    title, answer, user_id, folder_id, restrictions, 
+    time_out, used_tokens, date_time, model_llm, "like"
+)
+WITH RECURSIVE cnt(x) AS (
+    SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 300
+)
+SELECT 
+    '¿Cómo funciona ' || x || '?' as title,
+    'Respuesta automática para la consulta ' || x || '.' as answer,
+    (ABS(RANDOM()) % 150) + 1 as user_id,
+    (CASE WHEN (x % 5 = 0) THEN NULL ELSE (ABS(RANDOM()) % 30) + 1 END) as folder_id,
+    'none',
+    (ABS(RANDOM()) % 10) + 0.5,
+    (ABS(RANDOM()) % 1000) + 100,
+    DATETIME('now', '-' || (ABS(RANDOM()) % 30) || ' days', '-' || (ABS(RANDOM()) % 24) || ' hours'),
+    (CASE (x % 3) WHEN 0 THEN 'gpt-4o' WHEN 1 THEN 'claude-3-sonnet' ELSE 'gemini-1.5-pro' END),
+    -- LÓGICA 70/30: Si el resto de dividir un random entre 10 es < 7, es Like (1)
+    (CASE WHEN (ABS(RANDOM()) % 10) < 7 THEN 1 ELSE 0 END)
+FROM cnt;
