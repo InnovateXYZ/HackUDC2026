@@ -21,7 +21,7 @@ const mdComponents = {
  * ReportView — renders the AI analysis as an elegant, exportable document.
  * Designed for decision-making reports, not chat bubbles.
  */
-function ReportView({ questionId, question, answer, restrictions, like, onLikeChange, onNewQuery, temporary }) {
+function ReportView({ questionId, question, answer, restrictions, like, onLikeChange, temporary }) {
     const reportRef = useRef(null);
 
     const handleLike = async (value) => {
@@ -65,17 +65,7 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
     return (
         <div className="report-wrapper w-full max-w-4xl mx-auto animate-fade-in">
             {/* ── Toolbar (hidden on print) ── */}
-            <div className="no-print flex items-center justify-between mb-4 px-1">
-                <button
-                    onClick={onNewQuery}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[#1e1e1e] transition-colors border border-[#333]"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Query
-                </button>
-
+            <div className="no-print flex items-center justify-end mb-4 px-1">
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleCopyText}
@@ -181,34 +171,32 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                         </div>
                     )}
                     {!temporary && (
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <button
-                            onClick={() => handleLike(true)}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${
-                                like === true
-                                    ? 'bg-green-600/20 border-green-500 text-green-400'
-                                    : 'border-[#333] text-gray-400 hover:text-green-400 hover:border-green-500'
-                            }`}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
-                            </svg>
-                            Like
-                        </button>
-                        <button
-                            onClick={() => handleLike(false)}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${
-                                like === false
-                                    ? 'bg-red-600/20 border-red-500 text-red-400'
-                                    : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
-                            }`}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
-                            </svg>
-                            Dislike
-                        </button>
-                    </div>
+                        <div className="flex items-center justify-center gap-4 mb-4">
+                            <button
+                                onClick={() => handleLike(true)}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${like === true
+                                        ? 'bg-green-600/20 border-green-500 text-green-400'
+                                        : 'border-[#333] text-gray-400 hover:text-green-400 hover:border-green-500'
+                                    }`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
+                                </svg>
+                                Like
+                            </button>
+                            <button
+                                onClick={() => handleLike(false)}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${like === false
+                                        ? 'bg-red-600/20 border-red-500 text-red-400'
+                                        : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
+                                    }`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
+                                </svg>
+                                Dislike
+                            </button>
+                        </div>
                     )}
                     <p>
                         This report was automatically generated by the <strong>K2 AI Decision Engine</strong>.

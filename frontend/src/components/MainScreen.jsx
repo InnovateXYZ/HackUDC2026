@@ -265,7 +265,6 @@ function MainScreen() {
                         setSelectedQuestion(prev => ({ ...prev, like: newLike }));
                         setHistory(prev => prev.map(q => q.id === selectedQuestion.id ? { ...q, like: newLike } : q));
                     }}
-                    onNewQuery={handleNewChat}
                 />
             );
         }
