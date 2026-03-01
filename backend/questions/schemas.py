@@ -82,6 +82,7 @@ class DecisionRequest(BaseModel):
         False  # If True, personal info is excluded from the report
     )
     save_to_history: bool = True  # If False, the question won't be persisted
+    deepthink: bool = False  # If True, an extra refinement iteration is applied
 
 
 class DecisionResponse(BaseModel):
