@@ -253,7 +253,7 @@
       "pluginVersion": "12.4.0",
       "targets": [
         {
-          "queryText": "SELECT \n  unixepoch(strftime('%Y-%m-%d %H:00:00', created_at)) AS time,\n  SUM(COUNT(*)) OVER (ORDER BY created_at) AS \"Total Users\",\n  COUNT(*) AS \"New Users\"\nFROM \"user\"\n-- ESTA ES LA PARTE QUE CENTRA LA DATA:\nWHERE created_at >= datetime(-73456/1000, 'unixepoch')\n  AND created_at <= datetime(463732/1000, 'unixepoch')\nGROUP BY 1\nORDER BY 1;",
+          "queryText": "SELECT \n  unixepoch(strftime('%Y-%m-%d %H:00:00', created_at)) AS time,\n  SUM(COUNT(*)) OVER (ORDER BY created_at) AS \"Total Users\",\n  COUNT(*) AS \"New Users\"\nFROM \"user\"\n-- ESTA ES LA PARTE QUE CENTRA LA DATA:\nWHERE created_at >= datetime($__from/1000, 'unixepoch')\n  AND created_at <= datetime($__to/1000, 'unixepoch')\nGROUP BY 1\nORDER BY 1;",
           "queryType": "table",
           "rawQueryText": "SELECT \n  unixepoch(strftime('%Y-%m-%d %H:00:00', created_at)) AS time,\n  SUM(COUNT(*)) OVER (ORDER BY created_at) AS \"Total Users\",\n  COUNT(*) AS \"New Users\"\nFROM \"user\"\n-- ESTA ES LA PARTE QUE CENTRA LA DATA:\nWHERE created_at >= datetime($__from/1000, 'unixepoch')\n  AND created_at <= datetime($__to/1000, 'unixepoch')\nGROUP BY 1\nORDER BY 1;",
           "refId": "A",
@@ -360,19 +360,18 @@
               "type": "value"
             }
           ],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -401,9 +400,9 @@
       "pluginVersion": "12.4.0",
       "targets": [
         {
-          "queryText": "SELECT \n  CASE \n    WHEN \"like\" = 1 THEN 'Like OK'\n    ELSE 'Like Mal' \n  END AS metric,\n  COUNT(id) AS value\nFROM question\nGROUP BY metric;",
+          "queryText": "SELECT \n  (SUM(CASE WHEN \"like\" = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(id)) AS value\nFROM question;",
           "queryType": "table",
-          "rawQueryText": "SELECT \n  CASE \n    WHEN \"like\" = 1 THEN 'Like OK'\n    ELSE 'Like Mal' \n  END AS metric,\n  COUNT(id) AS value\nFROM question\nGROUP BY metric;",
+          "rawQueryText": "SELECT \n  (SUM(CASE WHEN \"like\" = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(id)) AS value\nFROM question;",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -443,7 +442,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 0,
         "y": 27
@@ -488,6 +487,78 @@
       ],
       "title": "Usuarios con más preguntas  (Top Curiosos)",
       "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Reparto porcentual de nuestra base de usuarios según rangos de edad.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 5,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Distribución Demográfica por Edad",
+      "type": "piechart"
     },
     {
       "datasource": {
@@ -566,9 +637,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 27
+        "w": 24,
+        "x": 0,
+        "y": 36
       },
       "id": 8,
       "options": {
@@ -578,9 +649,9 @@
       "pluginVersion": "12.4.0",
       "targets": [
         {
-          "queryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\"\nFROM user u\nJOIN question q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
+          "queryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  -- Edad calculada\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  -- Fecha formateada\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\",\n  -- Modelo de IA en mayúsculas\n  UPPER(q.model_llm) AS \"Modelo IA\",\n  -- Icono de satisfacción\n  CASE WHEN q.\"like\" = 1 THEN '✅ OK' ELSE '❌ No' END AS \"Rating\",\n  -- Tiempo de respuesta\n  ROUND(q.time_out, 2) || 's' AS \"Latencia\",\n  -- Tokens consumidos\n  q.used_tokens AS \"Tokens\"\nFROM \"user\" u\nJOIN \"question\" q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
           "queryType": "table",
-          "rawQueryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\"\nFROM user u\nJOIN question q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
+          "rawQueryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  -- Edad calculada\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  -- Fecha formateada\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\",\n  -- Modelo de IA en mayúsculas\n  UPPER(q.model_llm) AS \"Modelo IA\",\n  -- Icono de satisfacción\n  CASE WHEN q.\"like\" = 1 THEN '✅ OK' ELSE '❌ No' END AS \"Rating\",\n  -- Tiempo de respuesta\n  ROUND(q.time_out, 2) || 's' AS \"Latencia\",\n  -- Tokens consumidos\n  q.used_tokens AS \"Tokens\"\nFROM \"user\" u\nJOIN \"question\" q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -590,95 +661,22 @@
       ],
       "title": "Últimas Preguntas",
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "ffemf6735jhfkb"
-      },
-      "description": "Reparto porcentual de nuestra base de usuarios según rangos de edad.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 35
-      },
-      "id": 5,
-      "options": {
-        "displayLabels": [
-          "percent"
-        ],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.4.0",
-      "targets": [
-        {
-          "queryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
-          "queryType": "table",
-          "rawQueryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "Distribución Demográfica por Edad",
-      "type": "piechart"
     }
   ],
   "preload": false,
-  "refresh": "5s",
   "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "2026-02-28T23:51:10.897Z",
-    "to": "2026-03-01T01:08:03.397Z"
+    "from": "2026-01-15T15:34:11.241Z",
+    "to": "2026-01-25T23:19:47.873Z"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "HackUDC2026",
   "uid": "adm25g2",
-  "version": 35,
+  "version": 38,
   "weekStart": ""
 }
