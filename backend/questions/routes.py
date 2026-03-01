@@ -7,17 +7,97 @@ from ..db import get_session
 from ..users.auth import get_current_user
 from ..users.models import User
 from .schemas import (
+    FolderCreate,
+    FolderRead,
+    FolderUpdate,
     QuestionCreate,
+    QuestionMoveToFolder,
     QuestionRead,
     DecisionRequest,
     DecisionResponse,
     MetadataRequest,
     MetadataResponse,
 )
-from .crud import create_question, get_questions_by_user, update_question_like
+from .crud import (
+    create_folder,
+    create_question,
+    delete_folder,
+    get_folders_by_user,
+    get_questions_by_user,
+    move_question_to_folder,
+    update_folder,
+    update_question_like,
+)
 from ..decision_engine import GenericDecisionEngine
 
 router = APIRouter(prefix="/questions")
+
+
+# ── Folder endpoints ────────────────────────────────────────────────────────
+
+
+@router.post("/folders", response_model=FolderRead)
+def create_folder_route(
+    folder_in: FolderCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a new folder for the authenticated user."""
+    return create_folder(session, folder_in, owner_id=current_user.id)
+
+
+@router.get("/folders", response_model=List[FolderRead])
+def list_folders(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Return all folders belonging to the authenticated user."""
+    return get_folders_by_user(session, current_user.id)
+
+
+@router.patch("/folders/{folder_id}", response_model=FolderRead)
+def rename_folder(
+    folder_id: int,
+    folder_in: FolderUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Rename a folder. Only the owner may rename."""
+    folder = update_folder(session, folder_id, folder_in)
+    if folder is None or folder.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Folder not found")
+    return folder
+
+
+@router.delete("/folders/{folder_id}")
+def remove_folder(
+    folder_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a folder. Questions inside are un-assigned, not deleted."""
+    folders = get_folders_by_user(session, current_user.id)
+    if not any(f.id == folder_id for f in folders):
+        raise HTTPException(status_code=404, detail="Folder not found")
+    delete_folder(session, folder_id)
+    return {"status": "ok"}
+
+
+@router.patch("/{question_id}/folder", response_model=QuestionRead)
+def move_to_folder(
+    question_id: int,
+    body: QuestionMoveToFolder,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Move a question into a folder (or remove from folder if folder_id is null)."""
+    question = move_question_to_folder(session, question_id, body.folder_id)
+    if question is None or question.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return question
+
+
+# ── Question endpoints ──────────────────────────────────────────────────────
 
 
 @router.post("/", response_model=QuestionRead)
