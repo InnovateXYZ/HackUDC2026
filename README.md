@@ -1,4 +1,4 @@
-# 🚀 K1 Platform | HackUDC 2026
+# 🚀 K2 Platform | HackUDC 2026
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Hackathon_Project-orange?style=for-the-badge&logo=rocket" alt="Status">
@@ -11,7 +11,7 @@
 
 ## 💡 Overview
 
-**K1 Platform** is an advanced data orchestration and intelligence hub developed for **HackUDC 2026**. It bridges the gap between raw, siloed data and actionable insights by combining **Data Virtualization** with **Generative AI**.
+**K2 Platform** is an advanced data orchestration and intelligence hub developed for **HackUDC 2026**. It bridges the gap between raw, siloed data and actionable insights by combining **Data Virtualization** with **Generative AI**.
 
 The platform abstracts complex data sources using **Denodo**, processes them via a high-performance **FastAPI** backend, and delivers a sleek, real-time experience through a **React** frontend and **Grafana** dashboard.
 
@@ -54,11 +54,11 @@ We love hackers! Whether you found a bug, want to add a new Denodo data source, 
 
 ## ⚖️ License & Open Source Philosophy
 
-We believe in the power of shared knowledge. **K1 Platform** is licensed under the **GNU GPLv3**. 
+We believe in the power of shared knowledge. **K2 Platform** is licensed under the **GNU GPLv3**. 
 
 ### Why GPLv3?
 - **Freedom:** You are free to use, study, share, and modify the software.
-- **Copyleft:** This license ensures that **K1 Platform** and any derivative works will **always remain Open Source**.
+- **Copyleft:** This license ensures that **K2 Platform** and any derivative works will **always remain Open Source**.
 - **Community First:** We want to prevent "enclosure" of the code. If you improve it, the community benefits.
 
 *Check the LICENSE [GNU GPLv3](./LICENSE) file for more details.*
@@ -67,7 +67,7 @@ We believe in the power of shared knowledge. **K1 Platform** is licensed under t
 
 ## 🤝 Contributing
 
-We love hackers! This project is a collaborative effort, and we welcome any contribution to make **K1 Platform** even better.
+We love hackers! This project is a collaborative effort, and we welcome any contribution to make **K2 Platform** even better.
 
 > [!IMPORTANT]
 > Before you start coding, please read our **[Installation & Contribution Guide](./CONTRIBUTING.md)** to set up your environment using **Nix** and **Docker**.

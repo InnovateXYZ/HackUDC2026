@@ -1,6 +1,6 @@
-# 🛠️ Contributing to K1 Platform
+# 🛠️ Contributing to K2 Platform
 
-Welcome to the engine room! This document covers how to set up your environment for **K1 Platform**. We use **Nix** for a reproducible shell and **Docker** for the heavy-duty Denodo infrastructure.
+Welcome to the engine room! This document covers how to set up your environment for **K2 Platform**. We use **Nix** for a reproducible shell and **Docker** for the heavy-duty Denodo infrastructure.
 
 ---
 
