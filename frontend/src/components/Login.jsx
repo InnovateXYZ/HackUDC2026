@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logoSvg from '../assets/logo.png';
 import { saveToken } from '../utils/auth';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -141,9 +142,7 @@ function Login() {
       <div className="w-full max-w-md px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            <span className="text-[#f47721]">K2</span> Platform
-          </h1>
+          <img src={logoSvg} alt="K2 Platform Logo" className="h-20 mx-auto mb-4" />
           <p className="text-sm text-gray-400 mt-2">Sign in to your account</p>
         </div>
 
