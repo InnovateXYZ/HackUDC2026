@@ -1,12 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveToken } from '../utils/auth';
+
+const GOOGLE_CLIENT_ID = '526065876377-c6sfjd0bc4f23j637uf2vs4d5h7t8qrc.apps.googleusercontent.com';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null); // To display login errors
   const navigate = useNavigate();
+  const googleBtnRef = useRef(null);
+
+  // Google Sign-In callback
+  const handleGoogleResponse = async (response) => {
+    try {
+      const res = await fetch('http://localhost:8000/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.detail || 'Google sign-in failed');
+        return;
+      }
+
+      if (data.status === 'login') {
+        // Existing user — save token and go home
+        saveToken(data.access_token, data.token_type);
+        try { localStorage.setItem('user', JSON.stringify(data.user)); } catch {}
+        navigate('/home');
+      } else if (data.status === 'needs_registration') {
+        // New user — redirect to register with pre-filled email+name
+        const params = new URLSearchParams({ email: data.email, name: data.name || '' });
+        navigate(`/register?${params.toString()}`);
+      }
+    } catch (err) {
+      setError('Could not connect to the server');
+    }
+  };
+
+  // Initialize Google Sign In button
+  useEffect(() => {
+    const initGoogle = () => {
+      if (!window.google?.accounts?.id) {
+        // GSI script not loaded yet, retry
+        setTimeout(initGoogle, 200);
+        return;
+      }
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        theme: 'filled_black',
+        size: 'large',
+        width: '100%',
+        text: 'signin_with',
+        shape: 'rectangular',
+      });
+    };
+    initGoogle();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toErrorMessage = (detail, fallback = 'Error logging in') => {
     if (!detail) return fallback;
@@ -119,6 +175,16 @@ function Login() {
           >
             Log In
           </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mt-1">
+            <div className="flex-1 h-px bg-[#333]" />
+            <span className="text-xs text-gray-500">or</span>
+            <div className="flex-1 h-px bg-[#333]" />
+          </div>
+
+          {/* Google Sign In button */}
+          <div ref={googleBtnRef} className="w-full flex justify-center" />
 
           <div className="text-center mt-2">
             <p className="text-sm text-gray-400">

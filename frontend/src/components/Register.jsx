@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function Register() {
+  const [searchParams] = useSearchParams();
+  const prefillEmail = searchParams.get('email') || '';
+  const prefillName = searchParams.get('name') || '';
+
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(prefillName);
   const [genderIdentity, setGenderIdentity] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [userPreferences, setUserPreferences] = useState('');
