@@ -183,19 +183,6 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                     {!temporary && (
                     <div className="flex items-center justify-center gap-4 mb-4">
                         <button
-                            onClick={() => handleLike(false)}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${
-                                like === false
-                                    ? 'bg-red-600/20 border-red-500 text-red-400'
-                                    : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
-                            }`}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
-                            </svg>
-                            Dislike
-                        </button>
-                        <button
                             onClick={() => handleLike(true)}
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${
                                 like === true
@@ -207,6 +194,19 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
                             </svg>
                             Like
+                        </button>
+                        <button
+                            onClick={() => handleLike(false)}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${
+                                like === false
+                                    ? 'bg-red-600/20 border-red-500 text-red-400'
+                                    : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
+                            }`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
+                            </svg>
+                            Dislike
                         </button>
                     </div>
                     )}
