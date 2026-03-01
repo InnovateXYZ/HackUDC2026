@@ -26,10 +26,11 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="HackUDC2026")
 
-# Allow local frontend dev server (Vite) to access the API during development
+# Allow frontend to access the API (configurable via FRONTEND_URL env var)
+_frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    _frontend_url,
+    _frontend_url.replace("localhost", "127.0.0.1"),
 ]
 
 app.add_middleware(
