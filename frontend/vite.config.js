@@ -65,4 +65,6 @@ function datasetsPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), datasetsPlugin()],
+  // Read .env from the monorepo root (one level up)
+  envDir: path.resolve(__dirname, '..'),
 })
