@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { authFetch } from '../utils/auth';
+import { generateLatexPdf } from '../utils/latexPdf';
 
 /* Custom markdown components (kept outside render to avoid re-creation) */
 const mdComponents = {
@@ -23,6 +24,7 @@ const mdComponents = {
  */
 function ReportView({ questionId, question, answer, restrictions, like, onLikeChange, temporary }) {
     const reportRef = useRef(null);
+    const [pdfMenuOpen, setPdfMenuOpen] = useState(false);
 
     const handleLike = async (value) => {
         if (!questionId) return;
@@ -44,8 +46,13 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
         minute: '2-digit',
     });
 
-    const handlePrint = () => {
-        globalThis.print();
+    const handlePrint = (type = 'default') => {
+        if (type === 'latex') {
+            generateLatexPdf({ question, answer, restrictions, timestamp });
+        } else {
+            globalThis.print();
+        }
+        setPdfMenuOpen(false);
     };
 
     const handleCopyText = async () => {
@@ -77,16 +84,50 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                         </svg>
                         Copy
                     </button>
-                    <button
-                        onClick={handlePrint}
-                        title="Export as PDF / Print"
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#1e1e1e] transition-colors border border-[#333]"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Export PDF
-                    </button>
+
+                    {/* PDF Export Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setPdfMenuOpen((v) => !v)}
+                            title="Export as PDF"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#1e1e1e] transition-colors border border-[#333]"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Export PDF
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {pdfMenuOpen && (
+                            <>
+                                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+                                <div className="fixed inset-0 z-10" onClick={() => setPdfMenuOpen(false)} />
+                                <div className="absolute right-0 mt-1 w-44 rounded-lg bg-[#1e1e1e] border border-[#333] shadow-xl z-20 overflow-hidden">
+                                    <button
+                                        onClick={() => handlePrint('default')}
+                                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                        Default PDF
+                                    </button>
+                                    <button
+                                        onClick={() => handlePrint('latex')}
+                                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        LaTeX PDF
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -175,8 +216,8 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                             <button
                                 onClick={() => handleLike(true)}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${like === true
-                                        ? 'bg-green-600/20 border-green-500 text-green-400'
-                                        : 'border-[#333] text-gray-400 hover:text-green-400 hover:border-green-500'
+                                    ? 'bg-green-600/20 border-green-500 text-green-400'
+                                    : 'border-[#333] text-gray-400 hover:text-green-400 hover:border-green-500'
                                     }`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,8 +228,8 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
                             <button
                                 onClick={() => handleLike(false)}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors border ${like === false
-                                        ? 'bg-red-600/20 border-red-500 text-red-400'
-                                        : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
+                                    ? 'bg-red-600/20 border-red-500 text-red-400'
+                                    : 'border-[#333] text-gray-400 hover:text-red-400 hover:border-red-500'
                                     }`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
