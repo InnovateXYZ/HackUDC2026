@@ -320,6 +320,8 @@ class GenericDecisionEngine:
         "interests."
     )
 
+    # DeepThink data and report templates are defined below _generate_report
+
     def _generate_report(
         self,
         user_question: str,
@@ -354,6 +356,167 @@ class GenericDecisionEngine:
             user_question=user_question,
             raw_data=raw_answer,
             vql=vql,
+            user_profile_block=user_profile_block,
+            personalisation_instruction=personalisation_instruction,
+        )
+
+        params = {**self.DEFAULT_PARAMS, "question": report_prompt}
+
+        return self._get_with_retry("answerMetadataQuestion", params)
+
+    # ----------------------------------------
+    # PHASE 3b — DEEPTHINK: SECOND DATA FETCH
+    # ----------------------------------------
+    DEEPTHINK_DATA_TEMPLATE = (
+        "You already answered the following question:\n"
+        '"{user_question}"\n\n'
+        "and produced this raw data:\n"
+        "```\n{first_raw_data}\n```\n\n"
+        "Now perform a DEEPER analysis. Specifically:\n"
+        "1. Run additional or complementary queries to uncover patterns, "
+        "correlations, edge cases, or supporting data that were NOT covered "
+        "in the first pass.\n"
+        "2. Look for related metrics, comparisons, rankings, trends over "
+        "time, or breakdowns by category that add analytical depth.\n"
+        "3. Cross-validate the initial results — check for outliers, "
+        "inconsistencies, or alternative interpretations.\n"
+        "4. If possible, compute derived metrics (percentages, averages, "
+        "growth rates, etc.) that enrich the analysis.\n\n"
+        "Return the additional raw data and insights. Focus on DATA "
+        "retrieval, not formatting."
+    )
+
+    def _fetch_deepthink_data(
+        self,
+        user_question: str,
+        first_raw_data_response: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """DeepThink second data pass: ask answerDataQuestion for deeper,
+        complementary data based on the first result."""
+
+        first_raw_answer = first_raw_data_response.get(
+            "answer", str(first_raw_data_response)
+        )
+
+        deepthink_prompt = self.DEEPTHINK_DATA_TEMPLATE.format(
+            user_question=user_question,
+            first_raw_data=first_raw_answer,
+        )
+
+        params = {
+            **self.DEFAULT_PARAMS,
+            **self.DATA_QUESTION_EXTRA_PARAMS,
+            "question": deepthink_prompt,
+        }
+
+        return self._get_with_retry("answerDataQuestion", params)
+
+    # ----------------------------------------
+    # PHASE 4 — DEEPTHINK COMBINED REPORT
+    # ----------------------------------------
+
+    DEEPTHINK_REPORT_TEMPLATE = (
+        "You are a senior data analyst. Using ONLY the data provided below, "
+        "generate a professional, IN-DEPTH analytical report in **Markdown**.\n\n"
+        "CRITICAL LANGUAGE RULE: Detect the language of the USER QUESTION below "
+        "and write the **ENTIRE** report — including ALL section headings, "
+        "subheadings, body text, table headers, recommendations, and every "
+        "single word — in that SAME language.\n\n"
+        'USER QUESTION:\n"{user_question}"\n\n'
+        "{user_profile_block}"
+        "PRIMARY DATA (first query):\n"
+        "```\n{raw_data_1}\n```\n\n"
+        "VQL QUERY USED (first query):\n"
+        "```sql\n{vql_1}\n```\n\n"
+        "COMPLEMENTARY / DEEP-DIVE DATA (second query):\n"
+        "```\n{raw_data_2}\n```\n\n"
+        "VQL QUERY USED (second query):\n"
+        "```sql\n{vql_2}\n```\n\n"
+        "INSTRUCTIONS — You have TWO sets of data from two separate queries. "
+        "You MUST integrate, cross-reference, and synthesize BOTH data sets "
+        "to produce a single, comprehensive, deeply analytical report. "
+        "Do NOT skip any section. If a section has limited relevance, still "
+        "include it with a brief note.{personalisation_instruction}\n\n"
+        "REQUIRED SECTIONS (shown here in English — you MUST translate the "
+        "titles to match the user question language):\n\n"
+        "## 📋 Executive Summary\n"
+        "A concise paragraph (3-5 sentences) that **directly and unambiguously** "
+        "answers the user's question. State the conclusion or decision clearly "
+        "in the first sentence, then provide a brief justification grounded in "
+        "the data. Avoid vague or open-ended language — every statement must be "
+        "definitive and supported by specific figures from BOTH data sets.\n\n"
+        "## 🔍 Methodology\n"
+        "Explain: which tables / views were queried in EACH pass, filters or "
+        "joins applied, aggregation logic, and the rationale behind running "
+        "two complementary queries. Reference both VQL queries.\n\n"
+        "## 📊 Key Findings\n"
+        "Present the main results as a numbered list. Include specific "
+        "numbers, percentages, rankings, or comparisons. Cross-reference "
+        "findings from both queries to strengthen conclusions.\n\n"
+        "## 📈 Data Detail\n"
+        "Show supporting data in well-formatted Markdown tables. Include data "
+        "from BOTH queries where relevant. Add column headers and align "
+        "numbers to the right. Limit to the most relevant rows (max ~15 per "
+        "table) and indicate if more data exists.\n\n"
+        "## 🔬 Deep Analysis\n"
+        "This section is UNIQUE to the deep-think report. Provide advanced "
+        "analytical commentary: cross-correlations between the two data sets, "
+        "derived metrics, trend analysis, statistical patterns, and any "
+        "non-obvious insights that only emerge when combining both queries.\n\n"
+        "## 💡 Insights & Interpretation\n"
+        "Provide analytical commentary: patterns, correlations, anomalies, "
+        "or contextual explanations that add value beyond raw numbers.\n\n"
+        "## ✅ Recommendations\n"
+        "Based on the combined data, suggest actionable next steps, areas for "
+        "deeper analysis, or decisions the user could take. Be specific and "
+        "data-driven.\n\n"
+        "## ⚠️ Caveats & Limitations\n"
+        "Note any data quality issues, missing values, scope limitations, "
+        "or assumptions made during the analysis.\n\n"
+        "FORMATTING RULES:\n"
+        "- Use Markdown headings (##), bold, bullet points, and tables.\n"
+        "- Keep the tone professional and objective.\n"
+        "- Prioritize clarity and readability.\n"
+        "- Every claim MUST be backed by the provided data.\n"
+        "- Do NOT invent data that is not present above.\n"
+        "- REMEMBER: Translate ALL section titles and ALL text to the "
+        "language of the user question.\n"
+    )
+
+    def _generate_deepthink_report(
+        self,
+        user_question: str,
+        raw_data_response_1: Dict[str, Any],
+        raw_data_response_2: Dict[str, Any],
+        user_profile: Dict[str, Any] | None = None,
+    ) -> Dict[str, Any]:
+        """Generate a comprehensive report that integrates both data fetches
+        into a single, deep analytical report via answerMetadataQuestion."""
+
+        raw_answer_1 = raw_data_response_1.get("answer", str(raw_data_response_1))
+        vql_1 = raw_data_response_1.get("vql", "N/A")
+        raw_answer_2 = raw_data_response_2.get("answer", str(raw_data_response_2))
+        vql_2 = raw_data_response_2.get("vql", "N/A")
+
+        # Build the user profile block only when a profile is provided
+        if user_profile:
+            user_profile_block = self._USER_PROFILE_BLOCK.format(
+                user_name=user_profile.get("name") or "N/A",
+                user_date_of_birth=user_profile.get("date_of_birth") or "N/A",
+                user_gender=user_profile.get("gender_identity") or "N/A",
+                user_preferences=user_profile.get("user_preferences") or "N/A",
+            )
+            personalisation_instruction = self._PERSONALISATION_INSTRUCTION
+        else:
+            user_profile_block = ""
+            personalisation_instruction = ""
+
+        report_prompt = self.DEEPTHINK_REPORT_TEMPLATE.format(
+            user_question=user_question,
+            raw_data_1=raw_answer_1,
+            vql_1=vql_1,
+            raw_data_2=raw_answer_2,
+            vql_2=vql_2,
             user_profile_block=user_profile_block,
             personalisation_instruction=personalisation_instruction,
         )
@@ -400,11 +563,13 @@ class GenericDecisionEngine:
         discovered_schema: str | None = None,
         llm_model: str | None = None,
         user_profile: Dict[str, Any] | None = None,
+        deepthink: bool = False,
     ) -> Dict[str, Any]:
         """If discovered_schema is provided, skip the metadata phase and go
         straight to execution. Otherwise run both phases as before.
         If llm_model is provided, use it instead of the default.
-        If user_profile is provided, personalise the report for the user."""
+        If user_profile is provided, personalise the report for the user.
+        If deepthink is True, run an extra refinement iteration on the report."""
 
         # Use provided llm_model or fallback to default
         if llm_model is None:
@@ -433,17 +598,48 @@ class GenericDecisionEngine:
             # Phase 2 — retrieve raw data (clean question, no formatting noise)
             raw_data_response = self._fetch_raw_data(user_question)
 
-            # Phase 3 — format the raw data into the analytical report
-            report_response = self._generate_report(
-                user_question, raw_data_response, user_profile=user_profile
-            )
+            if deepthink:
+                # DeepThink flow: metadata → data → data → metadata
+                logger.info(
+                    "[Decision Engine] DeepThink enabled — running second data pass …"
+                )
+                # Phase 3 (deepthink) — second data fetch for deeper analysis
+                deepthink_data_response = self._fetch_deepthink_data(
+                    user_question, raw_data_response
+                )
 
-            return {
-                "status": "success",
-                "metadata_phase": metadata_response,
-                "execution_phase": raw_data_response,
-                "report": report_response.get("answer", ""),
-            }
+                # Phase 4 (deepthink) — single metadata call combining both data sets
+                logger.info(
+                    "[Decision Engine] DeepThink — generating combined report …"
+                )
+                report_response = self._generate_deepthink_report(
+                    user_question,
+                    raw_data_response,
+                    deepthink_data_response,
+                    user_profile=user_profile,
+                )
+                report_text = report_response.get("answer", "")
+
+                return {
+                    "status": "success",
+                    "metadata_phase": metadata_response,
+                    "execution_phase": raw_data_response,
+                    "deepthink_phase": deepthink_data_response,
+                    "report": report_text,
+                }
+            else:
+                # Standard flow: metadata → data → metadata
+                report_response = self._generate_report(
+                    user_question, raw_data_response, user_profile=user_profile
+                )
+                report_text = report_response.get("answer", "")
+
+                return {
+                    "status": "success",
+                    "metadata_phase": metadata_response,
+                    "execution_phase": raw_data_response,
+                    "report": report_text,
+                }
 
         except Exception as e:
             return {

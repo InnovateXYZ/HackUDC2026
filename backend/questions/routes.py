@@ -193,6 +193,7 @@ def decide(
             discovered_schema=request.metadata,
             llm_model=request.llm_model,
             user_profile=user_profile,
+            deepthink=request.deepthink,
         )
 
         if result.get("status") == "error":

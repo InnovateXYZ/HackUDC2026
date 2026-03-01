@@ -153,7 +153,7 @@ function MainScreen() {
     };
 
     // Handle stepper submission — call decision engine (Phase 2)
-    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets, saveToHistory = true }) => {
+    const handleSubmit = async ({ question, restrictions, metadata: metadataFromStepper, llmModel, selectedDatasets, saveToHistory = true, deepthink = false }) => {
         setLoading(true);
         setError(null);
         try {
@@ -171,6 +171,7 @@ function MainScreen() {
                     datasets: selectedDatasets || [],
                     exclude_user_info: anonymousMode,
                     save_to_history: saveToHistory,
+                    deepthink: deepthink,
                 }),
             });
 
