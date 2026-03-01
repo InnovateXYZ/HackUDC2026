@@ -27,7 +27,7 @@ function ReportView({ questionId, question, answer, restrictions, like, onLikeCh
     const handleLike = async (value) => {
         if (!questionId) return;
         try {
-            await authFetch(`http://localhost:8000/questions/${questionId}/like?like=${value}`, {
+            await authFetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/questions/${questionId}/like?like=${value}`, {
                 method: 'PATCH',
             });
             onLikeChange(value);

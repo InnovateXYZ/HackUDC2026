@@ -32,7 +32,7 @@ function Home() {
       // Call backend logout endpoint
       const token = localStorage.getItem('access_token');
       if (token) {
-        fetch('http://localhost:8000/logout', {
+        fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

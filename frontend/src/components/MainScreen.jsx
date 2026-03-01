@@ -5,7 +5,7 @@ import ReportView from './ReportView';
 import Sidebar from './Sidebar';
 import Stepper from './Stepper';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 function MainScreen() {
     const [history, setHistory] = useState([]);

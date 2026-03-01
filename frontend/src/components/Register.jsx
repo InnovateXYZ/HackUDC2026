@@ -41,7 +41,7 @@ function Register() {
       user_preferences: userPreferences || undefined,
     };
 
-    fetch('http://localhost:8000/register', {
+    fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveToken } from '../utils/auth';
 
-const GOOGLE_CLIENT_ID = '526065876377-c6sfjd0bc4f23j637uf2vs4d5h7t8qrc.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ function Login() {
   // Google Sign-In callback
   const handleGoogleResponse = async (response) => {
     try {
-      const res = await fetch('http://localhost:8000/auth/google', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential }),
@@ -92,7 +92,7 @@ function Login() {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
