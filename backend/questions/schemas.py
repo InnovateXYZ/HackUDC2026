@@ -5,6 +5,29 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+# ── Folder schemas ──────────────────────────────────────────────────────────
+
+
+class FolderCreate(BaseModel):
+    name: str
+
+
+class FolderUpdate(BaseModel):
+    name: Optional[str] = None
+
+
+class FolderRead(BaseModel):
+    id: int
+    name: str
+    user_id: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# ── Question schemas ────────────────────────────────────────────────────────
+
+
 class QuestionCreate(BaseModel):
     title: str
     answer: str
@@ -13,6 +36,7 @@ class QuestionCreate(BaseModel):
     used_tokens: Optional[int] = None
     date_time: Optional[datetime] = None
     model_llm: Optional[str] = None
+    folder_id: Optional[int] = None
 
 
 class QuestionRead(BaseModel):
@@ -20,6 +44,7 @@ class QuestionRead(BaseModel):
     title: str
     answer: str
     user_id: int
+    folder_id: Optional[int] = None
     restrictions: Optional[str] = None
     like: bool
 
@@ -30,6 +55,10 @@ class QuestionRead(BaseModel):
     model_llm: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class QuestionMoveToFolder(BaseModel):
+    folder_id: Optional[int] = None  # None = remove from folder
 
 
 class MetadataRequest(BaseModel):

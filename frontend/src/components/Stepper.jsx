@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AVAILABLE_DATASETS from 'virtual:available-datasets';
 
 const STEP_LABELS = ['Question & Datasets', 'Data & Filters'];
@@ -106,10 +106,10 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
     return (
         <div className="w-full max-w-3xl mx-auto">
             {/* Step indicators */}
-            <div className="flex items-center mb-8">
+            <div className="flex items-start justify-center mb-8">
                 {STEP_LABELS.map((label, idx) => (
-                    <div key={label} className="flex items-center flex-1">
-                        <div className="flex flex-col items-center flex-1">
+                    <React.Fragment key={label}>
+                        <div className="flex flex-col items-center" style={{ minWidth: 80 }}>
                             <button
                                 onClick={() => {
                                     if (idx < currentStep) setCurrentStep(idx);
@@ -123,8 +123,7 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             >
                                 {idx < currentStep ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
-                                        IndentationError: expected an indented block after 'try' statement on line                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 ) : (
                                     idx + 1
@@ -139,11 +138,11 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                         </div>
                         {idx < STEP_LABELS.length - 1 && (
                             <div
-                                className={`h-0.5 flex-1 mx-2 mt-[-18px] ${idx < currentStep ? 'bg-[#f47721]' : 'bg-[#333]'
-                                    }`}
+                                className={`h-0.5 w-24 mx-2 ${idx < currentStep ? 'bg-[#f47721]' : 'bg-[#333]'}`}
+                                style={{ marginTop: 20 }}
                             />
                         )}
-                    </div>
+                    </React.Fragment>
                 ))}
             </div>
 
@@ -492,8 +491,8 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                             onClick={() => setTemporary(t => !t)}
                             title={temporary ? 'Temporary query — will NOT be saved' : 'Query will be saved to history'}
                             className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition-colors border ${temporary
-                                    ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10'
-                                    : 'border-[#333] text-gray-400 hover:text-white hover:bg-[#1e1e1e]'
+                                ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10'
+                                : 'border-[#333] text-gray-400 hover:text-white hover:bg-[#1e1e1e]'
                                 }`}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

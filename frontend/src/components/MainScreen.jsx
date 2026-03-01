@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '../utils/auth';
+import { createFolder, deleteFolder, fetchFolders, moveQuestionToFolder, renameFolder } from '../utils/folders';
 import ReportView from './ReportView';
 import Sidebar from './Sidebar';
 import Stepper from './Stepper';
@@ -8,6 +9,7 @@ const API_BASE = 'http://localhost:8000';
 
 function MainScreen() {
     const [history, setHistory] = useState([]);
+    const [folders, setFolders] = useState([]);
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [loading, setLoading] = useState(false);
     const [metadataLoading, setMetadataLoading] = useState(false);
@@ -44,6 +46,58 @@ function MainScreen() {
     useEffect(() => {
         fetchHistory();
     }, [fetchHistory]);
+
+    // Fetch folders on mount
+    const loadFolders = useCallback(async () => {
+        try {
+            const data = await fetchFolders();
+            setFolders(data);
+        } catch (err) {
+            console.warn('Could not load folders', err);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadFolders();
+    }, [loadFolders]);
+
+    // Folder handlers
+    const handleCreateFolder = async (name) => {
+        try {
+            await createFolder(name);
+            await loadFolders();
+        } catch (err) {
+            console.warn('Could not create folder', err);
+        }
+    };
+
+    const handleRenameFolder = async (folderId, name) => {
+        try {
+            await renameFolder(folderId, name);
+            await loadFolders();
+        } catch (err) {
+            console.warn('Could not rename folder', err);
+        }
+    };
+
+    const handleDeleteFolder = async (folderId) => {
+        try {
+            await deleteFolder(folderId);
+            await loadFolders();
+            await fetchHistory(); // refresh questions since folder_id may have changed
+        } catch (err) {
+            console.warn('Could not delete folder', err);
+        }
+    };
+
+    const handleMoveQuestion = async (questionId, folderId) => {
+        try {
+            await moveQuestionToFolder(questionId, folderId);
+            await fetchHistory(); // refresh to reflect new folder assignment
+        } catch (err) {
+            console.warn('Could not move question', err);
+        }
+    };
 
 
     // Handle metadata fetch — Phase 1: discover tables/columns
@@ -206,8 +260,13 @@ function MainScreen() {
             {/* Left sidebar */}
             <Sidebar
                 history={history}
+                folders={folders}
                 onSelectQuestion={handleSelectQuestion}
                 onNewChat={handleNewChat}
+                onCreateFolder={handleCreateFolder}
+                onRenameFolder={handleRenameFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onMoveQuestion={handleMoveQuestion}
             />
 
             {/* Main content area */}
