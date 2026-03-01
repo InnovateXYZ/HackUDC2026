@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import logoSvg from '../assets/logo.png';
 
 function Register() {
   const [searchParams] = useSearchParams();
@@ -137,9 +138,7 @@ function Register() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            <span className="text-[#f47721]">K2</span> Platform
-          </h1>
+          <img src={logoSvg} alt="K2 Platform Logo" className="h-20 mx-auto mb-4" />
           <p className="text-sm text-gray-400 mt-2">Create your account</p>
         </div>
 
