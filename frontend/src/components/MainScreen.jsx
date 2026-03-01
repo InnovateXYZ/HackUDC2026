@@ -316,7 +316,7 @@ function MainScreen() {
                 {/* Top bar */}
                 <header className="flex items-center justify-between px-6 py-3 border-b border-[#333] bg-[#1e1e1e]">
                     <h1 className="text-lg font-semibold">
-                        <span className="text-[#f47721]">Denodo</span> Data Explorer
+                        <span className="text-[#f47721]">K2</span> Platform
                     </h1>
                     <div className="flex items-center gap-3 text-sm text-gray-400">
                         {/* Anonymous mode toggle */}

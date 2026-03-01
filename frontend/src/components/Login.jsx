@@ -132,7 +132,7 @@ function Login() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white">
-            <span className="text-[#f47721]">Denodo</span> Data Explorer
+            <span className="text-[#f47721]">K2</span> Platform
           </h1>
           <p className="text-sm text-gray-400 mt-2">Sign in to your account</p>
         </div>
