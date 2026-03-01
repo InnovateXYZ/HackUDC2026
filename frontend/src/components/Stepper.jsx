@@ -114,9 +114,9 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                         <div className="flex flex-col items-center" style={{ minWidth: 80 }}>
                             <button
                                 onClick={() => {
-                                    if (idx < currentStep) setCurrentStep(idx);
+                                    if (idx < currentStep && !metadataLoading) setCurrentStep(idx);
                                 }}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${idx < currentStep
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${idx < currentStep && !metadataLoading
                                     ? 'bg-[#f47721] text-white cursor-pointer'
                                     : idx === currentStep
                                         ? 'bg-[#f47721] text-white ring-2 ring-[#f4772155] ring-offset-2 ring-offset-[#242424]'
@@ -490,8 +490,8 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#333]">
                     <button
                         onClick={handlePrev}
-                        disabled={currentStep === 0}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${currentStep === 0
+                        disabled={currentStep === 0 || metadataLoading}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${currentStep === 0 || metadataLoading
                             ? 'text-gray-600 cursor-not-allowed'
                             : 'text-gray-300 hover:bg-[#2a2a2a] hover:text-white'
                             }`}
