@@ -6,12 +6,13 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" 
     environment:
       # Change in production
       - GF_SECURITY_ADMIN_USER=admin123
       - GF_SECURITY_ADMIN_PASSWORD=admin123
-      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource,yesoreyeram-infinity-datasource
     volumes:
       - ./data:/var/lib/grafana
       - ../backend/project.db:/var/lib/data/project.db:ro
-

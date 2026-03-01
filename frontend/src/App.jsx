@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Login from './components/Login'
 import MainScreen from './components/MainScreen'
 import Register from './components/Register'
+import GitHubCallback from './components/GitHubCallback'
 import { getToken } from './utils/auth'
 
 // Simple auth guard – redirects to login when no token is stored
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/github/callback" element={<GitHubCallback />} />
           <Route
             path="/home"
             element={
