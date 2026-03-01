@@ -1,0 +1,684 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  (SELECT COUNT(*) FROM user) AS \"Total Usuarios\",\n  (SELECT COUNT(*) FROM question) AS \"Total Preguntas\",\n  (SELECT AVG(\n    CAST(strftime('%Y', 'now') AS INTEGER) - CAST(strftime('%Y', date_of_birth) AS INTEGER)\n  ) FROM user) AS \"Edad Media\";",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  (SELECT COUNT(*) FROM user) AS \"Total Usuarios\",\n  (SELECT COUNT(*) FROM question) AS \"Total Preguntas\",\n  (SELECT AVG(\n    CAST(strftime('%Y', 'now') AS INTEGER) - CAST(strftime('%Y', date_of_birth) AS INTEGER)\n  ) FROM user) AS \"Edad Media\";",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "KPIs Críticos",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dfenm9h2itywwa"
+      },
+      "description": "Monitorización en tiempo real de la disponibilidad del backend (API). Este panel consulta el endpoint /health de forma recurrente para verificar la conectividad, la respuesta del servidor y el estado de la base de datos. ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 9,
+      "interval": "30s",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dfenm9h2itywwa"
+          },
+          "filters": [],
+          "format": "logs",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://host.docker.internal:8008/health",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Health check",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Muestra el crecimiento total de la plataforma frente a los nuevos registros.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  unixepoch(strftime('%Y-%m-%d %H:00:00', created_at)) AS time,\n  SUM(COUNT(*)) OVER (ORDER BY created_at) AS \"Total Users\",\n  COUNT(*) AS \"New Users\"\nFROM \"user\"\n-- ESTA ES LA PARTE QUE CENTRA LA DATA:\nWHERE created_at >= datetime(-73456/1000, 'unixepoch')\n  AND created_at <= datetime(463732/1000, 'unixepoch')\nGROUP BY 1\nORDER BY 1;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  unixepoch(strftime('%Y-%m-%d %H:00:00', created_at)) AS time,\n  SUM(COUNT(*)) OVER (ORDER BY created_at) AS \"Total Users\",\n  COUNT(*) AS \"New Users\"\nFROM \"user\"\n-- ESTA ES LA PARTE QUE CENTRA LA DATA:\nWHERE created_at >= datetime($__from/1000, 'unixepoch')\n  AND created_at <= datetime($__to/1000, 'unixepoch')\nGROUP BY 1\nORDER BY 1;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Evolución Histórica de Usuarios",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Correlación entre el tiempo de respuesta (latencia) y el volumen de tokens procesados. ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  strftime('%H:%M', q.date_time) AS \"Hora\",\n  q.time_out AS \"Segundos\",\n  q.used_tokens / 100.0 AS \"Tokens (x100)\" \nFROM question q\nORDER BY q.date_time DESC\nLIMIT 100;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  strftime('%H:%M', q.date_time) AS \"Hora\",\n  q.time_out AS \"Segundos\",\n  q.used_tokens / 100.0 AS \"Tokens (x100)\" \nFROM question q\nORDER BY q.date_time DESC\nLIMIT 100;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Latencia media vs. Tokens usados de media",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Proporción de feedback sobre las preguntas realizadas.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Like Mal": {
+                  "color": "dark-red",
+                  "index": 1
+                },
+                "Like OK": {
+                  "color": "dark-green",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 10,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  CASE \n    WHEN \"like\" = 1 THEN 'Like OK'\n    ELSE 'Like Mal' \n  END AS metric,\n  COUNT(id) AS value\nFROM question\nGROUP BY metric;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  CASE \n    WHEN \"like\" = 1 THEN 'Like OK'\n    ELSE 'Like Mal' \n  END AS metric,\n  COUNT(id) AS value\nFROM question\nGROUP BY metric;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Satisfacción del Usuario",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Clasificación de los usuarios según la cantidad de preguntas publicadas.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  u.username AS metric,\n  COUNT(q.id) AS value\nFROM user u\nJOIN question q ON u.id = q.user_id\nGROUP BY u.username\nORDER BY value DESC\nLIMIT 10",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  u.username AS metric,\n  COUNT(q.id) AS value\nFROM user u\nJOIN question q ON u.id = q.user_id\nGROUP BY u.username\nORDER BY value DESC\nLIMIT 10",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Usuarios con más preguntas  (Top Curiosos)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Registro detallado de las preguntas más recientes integradas con el perfil del usuario. ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "json-view"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pregunta"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 261
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Edad"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Usuario"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 115
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\"\nFROM user u\nJOIN question q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  u.username AS \"Usuario\",\n  q.title AS \"Pregunta\",\n  (strftime('%Y', 'now') - strftime('%Y', u.date_of_birth)) AS \"Edad\",\n  strftime('%H:%M - %d/%m', q.date_time) AS \"Fecha\"\nFROM user u\nJOIN question q ON u.id = q.user_id\nORDER BY q.id DESC\nLIMIT 5;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Últimas Preguntas",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ffemf6735jhfkb"
+      },
+      "description": "Reparto porcentual de nuestra base de usuarios según rangos de edad.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 5,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "queryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  CASE \n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) < 18 THEN 'Menores'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 18 AND 30 THEN 'Jóvenes (18-30)'\n    WHEN (strftime('%Y', 'now') - strftime('%Y', date_of_birth)) BETWEEN 31 AND 50 THEN 'Adultos (31-50)'\n    ELSE 'Seniors (>50)' \n  END AS metric,\n  COUNT(id) AS value\nFROM user\nWHERE date_of_birth IS NOT NULL\nGROUP BY metric;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Distribución Demográfica por Edad",
+      "type": "piechart"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2026-02-28T23:51:10.897Z",
+    "to": "2026-03-01T01:08:03.397Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "HackUDC2026",
+  "uid": "adm25g2",
+  "version": 35,
+  "weekStart": ""
+}
