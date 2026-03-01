@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 import requests
 import time
@@ -46,7 +47,7 @@ class GenericDecisionEngine:
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8008",
+        base_url: str = os.environ.get("DENODO_BASE_URL", "http://localhost:8008"),
         auth_user: str = "admin",
         auth_pass: str = "admin",
         timeout: int = 60,
