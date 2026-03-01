@@ -38,7 +38,7 @@ function GitHubCallback() {
           try { localStorage.setItem('user', JSON.stringify(data.user)); } catch {}
           navigate('/home', { replace: true });
         } else if (data.status === 'needs_registration') {
-          const params = new URLSearchParams({ email: data.email, name: data.name || '' });
+          const params = new URLSearchParams({ email: data.email, name: data.name || '', picture: data.picture || '' });
           navigate(`/register?${params.toString()}`, { replace: true });
         }
       } catch {

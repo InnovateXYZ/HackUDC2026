@@ -5,6 +5,7 @@ function Register() {
   const [searchParams] = useSearchParams();
   const prefillEmail = searchParams.get('email') || '';
   const prefillName = searchParams.get('name') || '';
+  const prefillPicture = searchParams.get('picture') || '';
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState(prefillEmail);
@@ -15,7 +16,8 @@ function Register() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [userPreferences, setUserPreferences] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(prefillPicture || null);
+  const [oauthPictureUrl, setOauthPictureUrl] = useState(prefillPicture || null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
@@ -44,6 +46,7 @@ function Register() {
   const removeImage = () => {
     setProfileImage(null);
     setImagePreview(null);
+    setOauthPictureUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -81,8 +84,9 @@ function Register() {
         throw new Error(data.detail || data.message || 'Registration failed');
       }
 
-      // 2. If there is a profile image, auto-login and upload it
-      if (profileImage) {
+      // 2. If there is a profile image (or OAuth picture), auto-login and upload it
+      const hasImage = profileImage || oauthPictureUrl;
+      if (hasImage) {
         const loginRes = await fetch(`${API_BASE}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -93,14 +97,29 @@ function Register() {
           const loginData = await loginRes.json();
           const token = loginData.access_token;
 
-          const formData = new FormData();
-          formData.append('file', profileImage);
+          let fileToUpload = profileImage;
+          // If user didn't pick a local file, download the OAuth picture
+          if (!fileToUpload && oauthPictureUrl) {
+            try {
+              const picRes = await fetch(oauthPictureUrl);
+              const blob = await picRes.blob();
+              const ext = blob.type.split('/')[1] || 'jpg';
+              fileToUpload = new File([blob], `oauth_avatar.${ext}`, { type: blob.type });
+            } catch {
+              // Ignore if download fails
+            }
+          }
 
-          await fetch(`${API_BASE}/me/profile-image`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
+          if (fileToUpload) {
+            const formData = new FormData();
+            formData.append('file', fileToUpload);
+
+            await fetch(`${API_BASE}/me/profile-image`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            });
+          }
           // We don't fail registration if image upload fails
         }
       }
@@ -160,7 +179,7 @@ function Register() {
             </div>
 
             {/* Optional profile details */}
-            <details className="md:col-span-2 p-4 rounded-lg border border-[#333] bg-[#2a2a2a]" open={false}>
+            <details className="md:col-span-2 p-4 rounded-lg border border-[#333] bg-[#2a2a2a]" open={!!prefillPicture || !!prefillName}>
               <summary className="cursor-pointer font-medium text-sm text-gray-300 hover:text-white transition-colors">Profile (optional)</summary>
               <p className="text-xs mt-2 mb-3 text-gray-500">Add extra info to personalize your experience.</p>
 

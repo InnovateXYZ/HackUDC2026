@@ -32,8 +32,8 @@ function Login() {
         try { localStorage.setItem('user', JSON.stringify(data.user)); } catch { }
         navigate('/home');
       } else if (data.status === 'needs_registration') {
-        // New user — redirect to register with pre-filled email+name
-        const params = new URLSearchParams({ email: data.email, name: data.name || '' });
+        // New user — redirect to register with pre-filled email+name+picture
+        const params = new URLSearchParams({ email: data.email, name: data.name || '', picture: data.picture || '' });
         navigate(`/register?${params.toString()}`);
       }
     } catch (err) {

@@ -83,6 +83,7 @@ def google_auth(data: GoogleAuthRequest, session: Session = Depends(get_session)
 
     email = idinfo.get("email")
     name = idinfo.get("name", "")
+    picture = idinfo.get("picture", "")
     if not email:
         raise HTTPException(status_code=400, detail="Google token missing email")
 
@@ -102,6 +103,7 @@ def google_auth(data: GoogleAuthRequest, session: Session = Depends(get_session)
             "status": "needs_registration",
             "email": email,
             "name": name,
+            "picture": picture,
         }
 
 
@@ -220,6 +222,7 @@ def github_auth(code: str, session: Session = Depends(get_session)):
 
     email = primary_email or gh_user.get("email")
     name = gh_user.get("name") or gh_user.get("login", "")
+    picture = gh_user.get("avatar_url", "")
 
     if not email:
         raise HTTPException(status_code=400, detail="Could not retrieve email from GitHub")
@@ -238,4 +241,5 @@ def github_auth(code: str, session: Session = Depends(get_session)):
             "status": "needs_registration",
             "email": email,
             "name": name,
+            "picture": picture,
         }
