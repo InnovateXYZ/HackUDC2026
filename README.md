@@ -40,6 +40,19 @@ and reliable development setup for the whole team.
 
 ---
 
+## 🎬 Use Case Demos
+
+Short video walkthroughs showcasing the main capabilities of **K2 Platform**. All videos are located in the [`docs/`](./docs) folder.
+
+| # | Use Case | Description | Video |
+|---|----------|-------------|-------|
+| 1 | **Book Recommendation by Category** | The platform recommends books based on user personal preferences and selected category. | [▶️ use_case_1.mp4](./docs/use_case_1.mp4) |
+| 2 | **Google OAuth Login** | User signs into the application using Google OAuth authentication. | [▶️ use_case_2.mp4](./docs/use_case_2.mp4) |
+| 3 | **Car Selection by Age & Budget** | The system suggests the best car options based on the user's age and available budget. | [▶️ use_case_3.mp4](./docs/use_case_3.mp4) |
+| 4 | **Deep Thinking (Iterative Analysis)** | Simulated deep thinking by iterating over the analysis and execution phases (metadata & data) for more refined results. | [▶️ use_case_4.mp4](./docs/use_case_4.mp4) |
+
+---
+
 ## 🤝 Contributing
 
 We love hackers! Whether you found a bug, want to add a new Denodo data source, or improve the AI-SDK prompts, your help is welcome.
