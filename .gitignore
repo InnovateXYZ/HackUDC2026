@@ -224,3 +224,5 @@ build/
 
 # Local SQLite DB used by backend during development
 backend/project.db
+
+backend/uploads

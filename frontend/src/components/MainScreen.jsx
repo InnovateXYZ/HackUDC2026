@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '../utils/auth';
 import { createFolder, deleteFolder, fetchFolders, moveQuestionToFolder, renameFolder } from '../utils/folders';
+import ProfileModal from './ProfileModal';
 import ReportView from './ReportView';
 import Sidebar from './Sidebar';
 import Stepper from './Stepper';
@@ -17,6 +18,8 @@ function MainScreen() {
     const [executionResult, setExecutionResult] = useState(null);
     const [error, setError] = useState(null);
     const [anonymousMode, setAnonymousMode] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Get user from localStorage
     const getUser = () => {
@@ -27,6 +30,23 @@ function MainScreen() {
             return null;
         }
     };
+
+    // Load user on mount and fetch fresh data from API
+    useEffect(() => {
+        const localUser = getUser();
+        setCurrentUser(localUser);
+
+        // Fetch fresh user data from API
+        authFetch(`${API_BASE}/me`)
+            .then(async (res) => {
+                if (res.ok) {
+                    const freshUser = await res.json();
+                    localStorage.setItem('user', JSON.stringify(freshUser));
+                    setCurrentUser(freshUser);
+                }
+            })
+            .catch(() => { /* keep localStorage version */ });
+    }, []);
 
     // Fetch question history on mount
     const fetchHistory = useCallback(async () => {
@@ -320,12 +340,38 @@ function MainScreen() {
                             )}
                             {anonymousMode ? 'Anonymous' : 'Personal'}
                         </button>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7c-4.418 0-8 1.79-8 4v1h16v-1c0-2.21-3.582-4-8-4z" />
-                        </svg>
-                        {getUser()?.username || 'User'}
+                        <button
+                            onClick={() => setProfileOpen(true)}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                            title="Edit profile"
+                        >
+                            {currentUser?.profile_image ? (
+                                <img
+                                    src={`${API_BASE}/${currentUser.profile_image}`}
+                                    alt="Profile"
+                                    className="w-7 h-7 rounded-full object-cover border border-[#444]"
+                                />
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-[#f47721] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7c-4.418 0-8 1.79-8 4v1h16v-1c0-2.21-3.582-4-8-4z" />
+                                </svg>
+                            )}
+                            <span className="text-gray-400 hover:text-white transition-colors">{currentUser?.username || 'User'}</span>
+                        </button>
                     </div>
                 </header>
+
+                {/* Profile modal */}
+                <ProfileModal
+                    open={profileOpen}
+                    onClose={() => setProfileOpen(false)}
+                    user={currentUser}
+                    onUserUpdated={(updatedUser) => {
+                        // localStorage is already updated inside ProfileModal
+                        // Update state so the header picks up new data (profile image, etc.)
+                        setCurrentUser(updatedUser);
+                    }}
+                />
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 flex items-start justify-center">

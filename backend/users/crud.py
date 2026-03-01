@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 from .models import User
-from .schemas import UserCreate
+from .schemas import UserCreate, UserUpdate
 from .utils import hash_password, verify_password
 
 
@@ -37,4 +37,24 @@ def authenticate_user(session: Session, identifier: str, password: str) -> User 
         return None
     if not verify_password(password, user.hashed_password):
         return None
+    return user
+
+
+def update_user(session: Session, user: User, updates: UserUpdate) -> User:
+    """Apply partial updates to an existing user and persist them."""
+    update_data = updates.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(user, field, value)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
+
+
+def update_user_profile_image(session: Session, user: User, image_path: str) -> User:
+    """Update the user's profile image path."""
+    user.profile_image = image_path
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user

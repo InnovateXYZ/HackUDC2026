@@ -23,6 +23,7 @@ class UserRead(BaseModel):
     name: Optional[str] = None
     date_of_birth: Optional[datetime.date] = None
     user_preferences: Optional[str] = None
+    profile_image: Optional[str] = None
     created_at: datetime.datetime
 
     # Pydantic v2: replace Config.orm_mode with model_config.from_attributes
@@ -44,6 +45,15 @@ class Token(BaseModel):
 class TokenWithUser(Token):
     # Include basic user info alongside token when logging in
     user: UserRead
+
+
+class UserUpdate(BaseModel):
+    """Fields the authenticated user is allowed to modify."""
+
+    name: Optional[str] = None
+    gender_identity: Optional[str] = None
+    date_of_birth: Optional[datetime.date] = None
+    user_preferences: Optional[str] = None
 
 
 class GoogleAuthRequest(BaseModel):

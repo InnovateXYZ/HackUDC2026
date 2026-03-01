@@ -19,5 +19,8 @@ class User(SQLModel, table=True):
     name: Optional[str] = Field(default=None)
     date_of_birth: Optional[datetime.date] = Field(default=None)
     user_preferences: Optional[str] = Field(default=None)
+    profile_image: Optional[str] = Field(
+        default=None
+    )  # relative path to uploaded image
 
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)

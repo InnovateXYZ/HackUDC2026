@@ -20,6 +20,7 @@
         python-jose
         cryptography
         google-auth
+        python-multipart
       ];
     in
     {

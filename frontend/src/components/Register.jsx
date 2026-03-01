@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function Register() {
@@ -14,16 +14,44 @@ function Register() {
   const [genderIdentity, setGenderIdentity] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [userPreferences, setUserPreferences] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      setError('Image must be JPG, PNG, GIF, or WebP');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be smaller than 5 MB');
+      return;
+    }
+
+    setProfileImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setProfileImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    // currently not connected to any backend
     if (password !== confirm) {
       setError('Passwords do not match');
       setLoading(false);
@@ -34,35 +62,55 @@ function Register() {
       username,
       email,
       password,
-      // backend expects these field names (see backend schemas)
       name: name || undefined,
       gender_identity: genderIdentity || undefined,
       date_of_birth: dateOfBirth || undefined,
       user_preferences: userPreferences || undefined,
     };
 
-    fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        setLoading(false);
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          const detail = data.detail || data.message || 'Registration failed';
-          throw new Error(detail);
+    try {
+      // 1. Register user
+      const regRes = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!regRes.ok) {
+        const data = await regRes.json().catch(() => ({}));
+        throw new Error(data.detail || data.message || 'Registration failed');
+      }
+
+      // 2. If there is a profile image, auto-login and upload it
+      if (profileImage) {
+        const loginRes = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (loginRes.ok) {
+          const loginData = await loginRes.json();
+          const token = loginData.access_token;
+
+          const formData = new FormData();
+          formData.append('file', profileImage);
+
+          await fetch(`${API_BASE}/me/profile-image`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          });
+          // We don't fail registration if image upload fails
         }
-        return res.json();
-      })
-      .then((user) => {
-        // registration succeeded; navigate to login
-        navigate('/login');
-      })
-      .catch((err) => {
-        setError(err.message || 'Registration error');
-      })
-      .finally(() => setLoading(false));
+      }
+
+      navigate('/login');
+    } catch (err) {
+      setError(err.message || 'Registration error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,6 +211,54 @@ function Register() {
                     placeholder='e.g. "I like short answers..."'
                     className="w-full px-3 py-2 rounded-lg bg-[#1e1e1e] border border-[#444] text-white placeholder-gray-500 outline-none focus:border-[#f47721] focus:ring-1 focus:ring-[#f47721]/30 transition-colors"
                   />
+                </div>
+
+                {/* Profile image upload */}
+                <div className="flex flex-col gap-2 text-left md:col-span-2">
+                  <label htmlFor="register-profile-image" className="text-sm text-gray-400">Profile image</label>
+                  <div className="flex items-center gap-4">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Profile preview"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-[#f47721]"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center hover:bg-red-500 transition-colors"
+                          title="Remove image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-[#1e1e1e] border border-[#444] flex items-center justify-center text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-[#333] border border-[#555] hover:bg-[#444] transition-colors cursor-pointer"
+                      >
+                        {profileImage ? 'Change image' : 'Upload image'}
+                      </button>
+                      <span className="text-xs text-gray-500">JPG, PNG, GIF, WebP · Max 5 MB</span>
+                    </div>
+                    <input
+                      id="register-profile-image"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </div>
                 </div>
               </div>
             </details>

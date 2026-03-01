@@ -13,6 +13,7 @@ if _env_file.exists():
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.db import init_db
 from backend.decision_engine import GenericDecisionEngine
@@ -54,3 +55,8 @@ def on_startup():
 app.include_router(users_router)
 # register questions router
 app.include_router(questions_router)
+
+# Serve uploaded files (profile images, etc.) as static assets
+_uploads_dir = Path(__file__).resolve().parent / "uploads"
+_uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_uploads_dir)), name="uploads")

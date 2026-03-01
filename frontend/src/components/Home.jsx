@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { clearAuth, getToken } from '../utils/auth';
+import { authFetch, clearAuth, getToken } from '../utils/auth';
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 function Home() {
   const [user, setUser] = useState(null);
@@ -8,23 +10,39 @@ function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
-    const userStr = localStorage.getItem('user');
     const token = getToken();
-
-    if (!token || !userStr) {
+    if (!token?.token) {
       navigate('/login');
       return;
     }
 
-    try {
-      const userData = JSON.parse(userStr);
-      setUser(userData);
-    } catch (err) {
-      console.error('Error parsing user data:', err);
-      navigate('/login');
-    }
-    setLoading(false);
+    // Fetch fresh user data from API
+    authFetch(`${API_BASE}/me`)
+      .then(async (res) => {
+        if (res.ok) {
+          const userData = await res.json();
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
+        } else {
+          // Fallback to localStorage if API fails
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            setUser(JSON.parse(userStr));
+          } else {
+            navigate('/login');
+          }
+        }
+      })
+      .catch(() => {
+        // Fallback to localStorage
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try { setUser(JSON.parse(userStr)); } catch { navigate('/login'); }
+        } else {
+          navigate('/login');
+        }
+      })
+      .finally(() => setLoading(false));
   }, [navigate]);
 
   const handleLogout = () => {
@@ -76,23 +94,34 @@ function Home() {
             <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-accent)' }}>
               Profile Information
             </h2>
-            <div style={{ color: 'var(--color-text)' }}>
-              <p className="mb-2">
-                <span className="font-semibold">Username:</span> {user?.username}
-              </p>
-              <p className="mb-2">
-                <span className="font-semibold">Email:</span> {user?.email}
-              </p>
-              {user?.name && (
-                <p className="mb-2">
-                  <span className="font-semibold">Name:</span> {user?.name}
-                </p>
+            <div className="flex items-start gap-6">
+              {/* Profile Image */}
+              {user?.profile_image && (
+                <img
+                  src={`${API_BASE}/${user.profile_image}`}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-2"
+                  style={{ borderColor: 'var(--color-accent)' }}
+                />
               )}
-              {user?.age && (
+              <div style={{ color: 'var(--color-text)' }}>
                 <p className="mb-2">
-                  <span className="font-semibold">Age:</span> {user?.age}
+                  <span className="font-semibold">Username:</span> {user?.username}
                 </p>
-              )}
+                <p className="mb-2">
+                  <span className="font-semibold">Email:</span> {user?.email}
+                </p>
+                {user?.name && (
+                  <p className="mb-2">
+                    <span className="font-semibold">Name:</span> {user?.name}
+                  </p>
+                )}
+                {user?.age && (
+                  <p className="mb-2">
+                    <span className="font-semibold">Age:</span> {user?.age}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -104,12 +133,20 @@ function Home() {
         style={{ backgroundColor: 'var(--color-surface-dark0)' }}
       >
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center"
+          className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
           style={{ backgroundColor: 'var(--color-denodo)' }}
         >
-          <span className="text-white font-bold text-lg">
-            {user?.username.charAt(0).toUpperCase()}
-          </span>
+          {user?.profile_image ? (
+            <img
+              src={`${API_BASE}/${user.profile_image}`}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-white font-bold text-lg">
+              {user?.username.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <div>

@@ -1,22 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlmodel import Session
 
 from ..db import get_session
-from .schemas import UserCreate, UserRead, LoginData, GoogleAuthRequest
+from .schemas import UserCreate, UserRead, UserUpdate, LoginData, GoogleAuthRequest
 from .crud import (
     create_user,
     get_user_by_username,
     get_user_by_email,
     authenticate_user,
+    update_user,
+    update_user_profile_image,
 )
 from .auth import create_access_token, get_current_user
 from .schemas import TokenWithUser
 
 import os
+import uuid
+from pathlib import Path
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
+# Directory for uploaded profile images
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads" / "profile_images"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
 router = APIRouter()
 
@@ -50,7 +61,7 @@ def login(data: LoginData, session: Session = Depends(get_session)):
 
 
 @router.post("/logout")
-def logout(current_user = Depends(get_current_user)):
+def logout(current_user=Depends(get_current_user)):
     """Logout endpoint - token is invalidated on frontend"""
     return {"message": "Successfully logged out"}
 
@@ -89,3 +100,74 @@ def google_auth(data: GoogleAuthRequest, session: Session = Depends(get_session)
             "email": email,
             "name": name,
         }
+
+
+@router.get("/me", response_model=UserRead)
+def get_me(current_user=Depends(get_current_user)):
+    """Return the currently authenticated user's profile."""
+    return current_user
+
+
+@router.put("/me", response_model=UserRead)
+def update_me(
+    updates: UserUpdate,
+    current_user=Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Update the currently authenticated user's profile fields."""
+    updated = update_user(session, current_user, updates)
+    return updated
+
+
+@router.post("/me/profile-image", response_model=UserRead)
+async def upload_profile_image(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Upload or replace the current user's profile image."""
+    # Validate extension
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File type '{ext}' not allowed. Use: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
+
+    # Read and validate size
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)} MB",
+        )
+
+    # Delete old image if it exists
+    if current_user.profile_image:
+        old_path = Path(__file__).resolve().parent.parent / current_user.profile_image
+        if old_path.exists():
+            old_path.unlink()
+
+    # Save with unique filename
+    unique_name = f"{current_user.id}_{uuid.uuid4().hex}{ext}"
+    file_path = UPLOAD_DIR / unique_name
+    file_path.write_bytes(contents)
+
+    # Store relative path in DB
+    relative_path = f"uploads/profile_images/{unique_name}"
+    updated_user = update_user_profile_image(session, current_user, relative_path)
+    return updated_user
+
+
+@router.delete("/me/profile-image", response_model=UserRead)
+def delete_profile_image(
+    current_user=Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Remove the current user's profile image."""
+    if current_user.profile_image:
+        old_path = Path(__file__).resolve().parent.parent / current_user.profile_image
+        if old_path.exists():
+            old_path.unlink()
+    updated_user = update_user_profile_image(session, current_user, None)
+    return updated_user
