@@ -197,7 +197,23 @@ function Stepper({ onSubmit, onFetchMetadata, loading, metadataLoading, metadata
 
                         {/* Dataset selection */}
                         <div className="border-t border-[#333] pt-4">
-                            <h4 className="text-sm font-semibold text-white mb-2">Select Datasets</h4>
+                            <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold text-white">Select Datasets</h4>
+                                <a
+                                    href="http://localhost:9090/denodo-design-studio/#/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs text-[#f47721]/80 hover:text-[#f47721] transition-colors"
+                                    title="Explore datasets in Denodo Design Studio"
+                                >
+                                    <span>Explore in Design Studio</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 3h6v6" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 14L21 3" />
+                                    </svg>
+                                </a>
+                            </div>
 
                             {/* Dropdown trigger */}
                             <div className="relative" ref={datasetsRef}>
