@@ -13,10 +13,13 @@ from .auth import create_access_token, get_current_user
 from .schemas import TokenWithUser
 
 import os
+import requests as http_requests
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "")
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "")
 
 router = APIRouter()
 
@@ -84,6 +87,73 @@ def google_auth(data: GoogleAuthRequest, session: Session = Depends(get_session)
         }
     else:
         # New user — tell frontend to complete registration
+        return {
+            "status": "needs_registration",
+            "email": email,
+            "name": name,
+        }
+
+
+@router.post("/auth/github")
+def github_auth(code: str, session: Session = Depends(get_session)):
+    """Exchange GitHub OAuth code for access token, fetch user info.
+    If user exists, log them in. Otherwise return needs_registration."""
+    # Exchange code for access token
+    token_res = http_requests.post(
+        "https://github.com/login/oauth/access_token",
+        json={
+            "client_id": GITHUB_CLIENT_ID,
+            "client_secret": GITHUB_CLIENT_SECRET,
+            "code": code,
+        },
+        headers={"Accept": "application/json"},
+        timeout=10,
+    )
+    token_data = token_res.json()
+    gh_access_token = token_data.get("access_token")
+    if not gh_access_token:
+        raise HTTPException(status_code=401, detail="GitHub authentication failed")
+
+    # Fetch GitHub user profile
+    user_res = http_requests.get(
+        "https://api.github.com/user",
+        headers={"Authorization": f"Bearer {gh_access_token}", "Accept": "application/json"},
+        timeout=10,
+    )
+    gh_user = user_res.json()
+
+    # Fetch emails (in case email is private)
+    emails_res = http_requests.get(
+        "https://api.github.com/user/emails",
+        headers={"Authorization": f"Bearer {gh_access_token}", "Accept": "application/json"},
+        timeout=10,
+    )
+    emails = emails_res.json()
+    primary_email = None
+    if isinstance(emails, list):
+        for em in emails:
+            if em.get("primary") and em.get("verified"):
+                primary_email = em["email"]
+                break
+        if not primary_email and emails:
+            primary_email = emails[0].get("email")
+
+    email = primary_email or gh_user.get("email")
+    name = gh_user.get("name") or gh_user.get("login", "")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Could not retrieve email from GitHub")
+
+    user = get_user_by_email(session, email)
+    if user:
+        access_token = create_access_token({"sub": str(user.id)})
+        return {
+            "status": "login",
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserRead.model_validate(user).model_dump(),
+        }
+    else:
         return {
             "status": "needs_registration",
             "email": email,
