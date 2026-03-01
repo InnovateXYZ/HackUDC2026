@@ -19,6 +19,7 @@
         email-validator
         python-jose
         cryptography
+        google-auth
       ];
     in
     {

@@ -44,3 +44,7 @@ class Token(BaseModel):
 class TokenWithUser(Token):
     # Include basic user info alongside token when logging in
     user: UserRead
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token from GSI
