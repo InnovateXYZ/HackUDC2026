@@ -11,6 +11,8 @@
 
 ## 💡 Overview
 
+DENODO WINNER🥇.
+
 **K2 Platform** is an advanced data orchestration and intelligence hub developed for **HackUDC 2026**. It bridges the gap between raw, siloed data and actionable insights by combining **Data Virtualization** with **Generative AI**.
 
 The platform abstracts complex data sources using **Denodo**, processes them via a high-performance **FastAPI** backend, and delivers a sleek, real-time experience through a **React** frontend and **Grafana** dashboard.
